@@ -22,7 +22,7 @@ class WorkExperience(models.Model):
 
 class Skill(models.Model):
     name = models.CharField(max_length=50)
-    level = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    level = models.IntegerField(null=True, blank=True)  # Permet des valeurs nulles
 
 class Project(models.Model):
     title = models.CharField(max_length=100)
