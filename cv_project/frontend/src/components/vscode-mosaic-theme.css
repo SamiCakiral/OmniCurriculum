@@ -1,0 +1,28 @@
+.mosaic {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-window {
+    border: 1px solid #444444;
+  }
+  
+  .mosaic-window-toolbar {
+    background-color: #252526;
+    color: #cccccc;
+  }
+  
+  .mosaic-window-body {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-window-title {
+    color: #cccccc;
+  }
+  
+  .mosaic-split {
+    background-color: #444444;
+  }
+  
+  .mosaic-split:hover {
+    background-color: #007acc;
+  }
