@@ -11,16 +11,16 @@ const SideBar = ({ setShowExplorer, setShowConsole }) => {
   ];
 
   return (
-    <div className="w-12 bg-gray-900 flex flex-col items-center py-4 h-full">
+    <div className="w-12 bg-[#333333] flex flex-col items-center py-4">
       {icons.map(({ Icon, action, label }, index) => (
-        <div 
-          key={index} 
-          className="mb-4 text-gray-400 hover:text-white cursor-pointer" 
+        <button
+          key={index}
           onClick={action}
+          className="mb-4 text-[#858585] hover:text-[#cccccc] focus:outline-none"
           title={label}
         >
           <Icon className="w-6 h-6" />
-        </div>
+        </button>
       ))}
     </div>
   );

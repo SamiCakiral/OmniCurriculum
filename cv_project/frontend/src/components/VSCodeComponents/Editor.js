@@ -66,17 +66,17 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
   }, [file]);
 
   return (
-    <div className="flex-1 bg-gray-900 overflow-hidden flex flex-col">
-      <div className="bg-gray-800 px-4 py-2 text-sm border-b border-gray-700 flex justify-between items-center">
+    <div className="flex-1 bg-[#1e1e1e] overflow-hidden flex flex-col">
+      <div className="bg-[#252526] px-4 py-2 text-sm border-b border-[#333333] flex justify-between items-center">
         <span>{`${file.section}/${file.name}`}</span>
         <button 
           onClick={() => removeFile(file.name)}
-          className="text-gray-500 hover:text-white"
+          className="text-[#cccccc] hover:text-white"
         >
           ×
         </button>
       </div>
-      <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1">
+      <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[#cccccc]">
         {fileContent}
       </pre>
     </div>

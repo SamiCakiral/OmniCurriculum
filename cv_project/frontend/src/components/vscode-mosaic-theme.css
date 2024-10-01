@@ -3,12 +3,14 @@
   }
   
   .mosaic-window {
-    border: 1px solid #444444;
+    border: none;
+    box-shadow: none;
   }
   
   .mosaic-window-toolbar {
-    background-color: #252526;
+    background-color: #1e1e1e;
     color: #cccccc;
+    border-bottom: 1px solid #333333;
   }
   
   .mosaic-window-body {
@@ -20,9 +22,92 @@
   }
   
   .mosaic-split {
-    background-color: #444444;
+    background-color: #1e1e1e;
+    margin: 0;
   }
   
   .mosaic-split:hover {
     background-color: #007acc;
+  }
+  
+  
+  .mosaic-window-controls {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-window-body:focus {
+    outline: none;
+  }
+  
+  .mosaic-window-body:hover {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-preview {
+    background-color: #1e1e1e;
+    border: 1px dashed #454545;
+  }
+  
+  
+  .mosaic-root {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-tile {
+    margin: 0;
+  }
+  
+  
+  .mosaic-split.-row, .mosaic-split.-column {
+    background-color: #333333;
+    margin: 0;
+    border: none;
+  }
+  
+  .mosaic-split.-row:hover, .mosaic-split.-column:hover {
+    background-color: #007acc;
+  }
+  
+  .mosaic-root.mosaic-blueprint-theme {
+    background-color: #1e1e1e !important;
+  }
+
+  .mosaic-root .mosaic-tile {
+    margin: 0 !important;
+    background-color: #1e1e1e !important;
+  }
+
+  .mosaic-root .mosaic-window {
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .mosaic-root .mosaic-split {
+    background-color: #333333 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .mosaic-root .mosaic-split:hover {
+    background-color: #007acc !important;
+  }
+
+  /* Ajoutez ces règles à la fin du fichier */
+
+  .mosaic-window {
+    background-color: #1e1e1e !important;
+  }
+
+  .mosaic-window-body {
+    background-color: #1e1e1e !important;
+  }
+
+  .mosaic-window-toolbar {
+    background-color: #252526 !important;
+    border-bottom: 1px solid #333333 !important;
+  }
+
+  .mosaic-window-controls {
+    background-color: #252526 !important;
   }

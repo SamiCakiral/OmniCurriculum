@@ -30,8 +30,8 @@ const Console = () => {
   if (!personalInfo) return <div className="h-full bg-black text-yellow-500 p-4">Aucune information personnelle trouvée.</div>;
 
   return (
-    <div className="h-full bg-black text-green-400 overflow-hidden flex flex-col">
-      <div className="bg-gray-800 px-4 py-2 text-xs font-bold uppercase tracking-wide">Console</div>
+    <div className="h-full bg-[#1e1e1e] text-[#cccccc] overflow-hidden flex flex-col">
+      <div className="bg-[#252526] px-4 py-2 text-xs font-bold uppercase tracking-wide">Console</div>
       <div className="flex-1 overflow-auto">
         <pre className="p-4 text-xs font-mono whitespace-pre-wrap">
           {`> console.log(personalInfo)
