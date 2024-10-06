@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Mosaic } from 'react-mosaic-component';
@@ -9,6 +9,7 @@ import Explorer from './VSCodeComponents/Explorer';
 import Editor from './VSCodeComponents/Editor';
 import Console from './VSCodeComponents/Console';
 import StatusBar from './VSCodeComponents/StatusBar';
+import axios from 'axios';
 
 const VSCodeTheme = () => {
   const [activeFiles, setActiveFiles] = useState([]);
