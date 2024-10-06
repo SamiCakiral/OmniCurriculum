@@ -10,6 +10,7 @@ import Editor from './VSCodeComponents/Editor';
 import Console from './VSCodeComponents/Console';
 import StatusBar from './VSCodeComponents/StatusBar';
 import axios from 'axios';
+import Chronologie from './VSCodeComponents/Chronologie';
 
 const VSCodeTheme = () => {
   const [activeFiles, setActiveFiles] = useState([]);
@@ -44,6 +45,8 @@ const VSCodeTheme = () => {
         );
       case 'console':
         return showConsole ? <Console /> : null;
+      case 'chronologie':
+        return <Chronologie />;
       default:
         return null;
     }
@@ -51,7 +54,12 @@ const VSCodeTheme = () => {
 
   const initialLayout = {
     direction: 'row',
-    first: 'explorer',
+    first: {
+      direction: 'column',
+      first: 'explorer',
+      second: 'chronologie',
+      splitPercentage: 70,
+    },
     second: {
       direction: 'column',
       first: 'editor',
