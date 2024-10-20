@@ -7,22 +7,32 @@ const SideBar = ({ setShowExplorer, setShowConsole, openSettings, openCVPanel })
     { Icon: TerminalIcon, action: () => setShowConsole(prev => !prev), label: 'Toggle Console' },
     { Icon: PrinterIcon, action: () => window.print(), label: 'Print CV' },
     { Icon: DocumentDownloadIcon, action: openCVPanel, label: 'View and Download CV' },
-    { Icon: AdjustmentsIcon, action: () => alert('Theme settings not implemented'), label: 'Theme Settings' },
     { Icon: CogIcon, action: openSettings, label: 'Paramètres' }
   ];
 
   return (
-    <div className="w-12 bg-[var(--bg-tertiary)] flex flex-col items-center py-4">
-      {icons.map(({ Icon, action, label }, index) => (
+    <div className="w-12 bg-[var(--bg-tertiary)] flex flex-col items-center py-4 justify-between">
+      <div>
+        {icons.filter(icon => icon.label !== 'Paramètres').map(({ Icon, action, label }, index) => (
+          <button
+            key={index}
+            onClick={action}
+            className="mb-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] focus:outline-none p-2 rounded"
+            title={label}
+          >
+            <Icon className="w-6 h-6" />
+          </button>
+        ))}
+      </div>
+      {icons.find(icon => icon.label === 'Paramètres') && (
         <button
-          key={index}
-          onClick={action}
-          className="mb-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] focus:outline-none p-2 rounded"
-          title={label}
+          onClick={icons.find(icon => icon.label === 'Paramètres').action}
+          className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] focus:outline-none p-2 rounded"
+          title="Paramètres"
         >
-          <Icon className="w-6 h-6" />
+          <CogIcon className="w-6 h-6" />
         </button>
-      ))}
+      )}
     </div>
   );
 };

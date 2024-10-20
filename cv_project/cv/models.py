@@ -1,32 +1,126 @@
 from django.db import models
+from markdown import markdown
 
 class PersonalInfo(models.Model):
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     name = models.CharField(max_length=100)
+    title = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
+    photo_url = models.URLField(blank=True)
+    years_of_experience = models.IntegerField(null=True, blank=True)
+    has_vehicle = models.BooleanField(default=False)
+    region = models.CharField(max_length=100)
+    linkedin_url = models.URLField(blank=True)
+    github_url = models.URLField(blank=True)
+    github_username = models.CharField(max_length=50, blank=True)
     summary = models.TextField()
 
+    def __str__(self):
+        return f"{self.name} ({self.language})"
+
+class Skill(models.Model):
+    SKILL_TYPES = (
+        ('hard', 'Compétence technique'),
+        ('soft', 'Compétence personnelle'),
+    )
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=4, choices=SKILL_TYPES)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_type_display()})"
+
+class Language(models.Model):
+    name = models.CharField(max_length=50)
+    level = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.name} - {self.level}"
+
+class Hobby(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
 class Education(models.Model):
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     institution = models.CharField(max_length=100)
     degree = models.CharField(max_length=100)
     field_of_study = models.CharField(max_length=100)
     start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.degree} - {self.institution} ({self.language})"
+
+    def get_formatted_description(self):
+        return markdown(self.description)
 
 class WorkExperience(models.Model):
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     company = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField()
 
-class Skill(models.Model):
-    name = models.CharField(max_length=50)
-    level = models.IntegerField(null=True, blank=True)  # Permet des valeurs nulles
+    def __str__(self):
+        return f"{self.position} at {self.company} ({self.language})"
+
+    def get_formatted_description(self):
+        return markdown(self.description)
 
 class Project(models.Model):
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     title = models.CharField(max_length=100)
-    description = models.TextField()
-    technologies = models.ManyToManyField(Skill)
-    url = models.URLField(blank=True)
-    image = models.ImageField(upload_to='project_images/', blank=True)
+    short_description = models.CharField(max_length=200)
+    description = models.TextField()  # Gardez ce champ si vous voulez conserver les données existantes
+    long_description = models.TextField()  # Nouveau champ
+    technologies = models.ManyToManyField(Skill, related_name='projects')
+    github_url = models.URLField(blank=True)
+    live_url = models.URLField(blank=True)  # Renommé de 'url'
+
+    def __str__(self):
+        return f"{self.title} ({self.language})"
+
+    def get_formatted_description(self):
+        return markdown(self.long_description)
+
+class Certification(models.Model):
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
+    name = models.CharField(max_length=100)
+    issuing_organization = models.CharField(max_length=100)
+    issue_date = models.DateField()
+    expiration_date = models.DateField(null=True, blank=True)
+    credential_id = models.CharField(max_length=100, blank=True)
+    credential_url = models.URLField(blank=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.issuing_organization} ({self.language})"
+
+    def get_formatted_description(self):
+        return markdown(self.description)

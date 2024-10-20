@@ -1,0 +1,409 @@
+<html>
+
+<head>
+  <base href="https://mon-cv-ultra-style.com/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV Ultra Stylé - Développeur Informatique</title>
+  <style>
+    :root {
+      --vscode-bg: var(--bg-color, #1e1e1e);
+      --vscode-sidebar: var(--bg-secondary, #252526);
+      --vscode-text: var(--text-color, #d4d4d4);
+      --vscode-highlight: #264f78;
+      --vscode-comment: #6A9955;
+      --vscode-function: #DCDCAA;
+      --vscode-keyword: #569CD6;
+      --vscode-string: #CE9178;
+      --vscode-number: #B5CEA8;
+    }
+
+    body {
+      font-family: 'Fira Code', monospace;
+      line-height: 1.6;
+      color: var(--vscode-text);
+      background-color: var(--vscode-bg);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar {
+      width: 250px;
+      background-color: var(--vscode-sidebar);
+      padding: 2rem;
+      color: var(--vscode-text);
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+      background-color: var(--vscode-bg);
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--vscode-keyword);
+      font-weight: normal;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      border-bottom: 1px solid var(--vscode-highlight);
+      padding-bottom: 0.5rem;
+    }
+
+    .profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--vscode-highlight);
+      margin-bottom: 1rem;
+    }
+
+    .tag {
+      display: inline-block;
+      background-color: var(--vscode-highlight);
+      color: var(--vscode-text);
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      margin: 0.2rem;
+      font-size: 0.9rem;
+    }
+
+    .experience-item,
+    .project-item {
+      margin-bottom: 1.5rem;
+    }
+
+    .company,
+    .project-title {
+      color: var(--vscode-function);
+      font-weight: bold;
+    }
+
+    .date {
+      color: var(--vscode-comment);
+      font-style: italic;
+    }
+
+    .contact-info {
+      margin-top: 2rem;
+    }
+
+    .contact-info a {
+      color: var(--vscode-string);
+      text-decoration: none;
+    }
+
+    .contact-info a:hover {
+      text-decoration: underline;
+    }
+
+    .code-block {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      border-radius: 5px;
+      font-family: 'Fira Code', monospace;
+      white-space: pre-wrap;
+    }
+
+    .comment {
+      color: var(--vscode-comment);
+    }
+
+    .keyword {
+      color: var(--vscode-keyword);
+    }
+
+    .string {
+      color: var(--vscode-string);
+    }
+
+    .function {
+      color: var(--vscode-function);
+    }
+
+    .number {
+      color: var(--vscode-number);
+    }
+
+    .company,
+    .project-title {
+      color: var(--vscode-function);
+      font-weight: bold;
+    }
+
+    .date {
+      color: var(--vscode-comment);
+      font-style: italic;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li::before {
+      content: "•";
+      color: var(--vscode-keyword);
+      display: inline-block;
+      width: 1em;
+      margin-left: -1em;
+    }
+
+    /* Styles spécifiques pour le thème clair */
+    .light {
+      --vscode-bg: #ffffff;
+      --vscode-sidebar: #f3f3f3;
+      --vscode-text: #333333;
+      --vscode-highlight: #007acc;
+      --vscode-comment: #008000;
+      --vscode-function: #795E26;
+      --vscode-keyword: #0000ff;
+      --vscode-string: #a31515;
+      --vscode-number: #098658;
+    }
+
+    .light .code-block {
+      background-color: #f0f0f0;
+    }
+
+    .light .tag {
+      background-color: #e0e0e0;
+      color: #333333;
+    }
+
+    @media print {
+      body {
+        background-color: white;
+        color: black;
+      }
+
+      .container {
+        box-shadow: none;
+      }
+
+      .sidebar,
+      .main-content {
+        background-color: white;
+      }
+
+      h1,
+      h2,
+      h3,
+      .company,
+      .project-title {
+        color: #2c3e50;
+      }
+
+      .tag {
+        background-color: #ecf0f1;
+        color: #34495e;
+      }
+
+      .code-block {
+        background-color: #f8f8f8;
+        border-color: #ddd;
+      }
+
+      .comment {
+        color: #6A9955;
+      }
+
+      .keyword {
+        color: #569CD6;
+      }
+
+      .string {
+        color: #CE9178;
+      }
+
+      .number {
+        color: #B5CEA8;
+      }
+
+      .function {
+        color: #DCDCAA;
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <img src="{{ personal_info.photo_url|default:'profile-pic.jpg' }}" 
+                 alt="Photo professionnelle de {{ personal_info.name }}"
+                 class="profile-pic" width="150" height="150">
+            <h1>{{ personal_info.name }}</h1>
+            <p>{{ personal_info.title }}</p>
+            <div>
+                <h3>Compétences techniques</h3>
+                {% for skill in hard_skills %}
+                    <span class="tag">{{ skill.name }}</span>
+                {% endfor %}
+                
+                <h3>Compétences personnelles</h3>
+                {% for skill in soft_skills %}
+                    <span class="tag soft-skill">{{ skill.name }}</span>
+                {% endfor %}
+                
+                <h3>Langues</h3>
+                {% for language in languages %}
+                    <span class="tag language">{{ language.name }} ({{ language.level }})</span>
+                {% endfor %}
+            </div>
+            <div class="contact-info">
+                <p>📧 <a href="mailto:{{ personal_info.email }}">{{ personal_info.email }}</a></p>
+                <p>📱 {{ personal_info.phone }}</p>
+                {% if personal_info.website %}
+                    <p>🌐 <a href="{{ personal_info.website }}">{{ personal_info.website }}</a></p>
+                {% endif %}
+                <p>
+                    {% if personal_info.github %}
+                        <a href="{{ personal_info.github }}">GitHub</a>
+                    {% endif %}
+                    {% if personal_info.linkedin %}
+                        {% if personal_info.github %} | {% endif %}
+                        <a href="{{ personal_info.linkedin }}">LinkedIn</a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="main-content">
+            <h2>// Profil</h2>
+            <p>{{ personal_info.summary }}</p>
+
+            <div class="code-block">
+                <span class="comment">// Fonction principale de ma carrière</span>
+                {% if code_language == 'python' %}
+                <span class="keyword">def</span> <span class="function">developer_career</span>():
+                    skills = [{% for skill in hard_skills %}<span class="string">"{{ skill.name }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}]
+                    experience = <span class="number">{{ personal_info.years_of_experience }}</span>  <span class="comment"># années</span>
+                    passion = <span class="string">"infinite"</span>
+
+                    <span class="keyword">while</span> passion:
+                        learn_new_technologies()
+                        build_amazing_projects()
+                        collaborate_with_team()
+                        experience += 1
+
+                    <span class="keyword">return</span> <span class="string">"Successful and fulfilling career"</span>
+
+                developer_career()  <span class="comment"># Exécution en cours...</span>
+                {% elif code_language == 'javascript' %}
+                <span class="keyword">function</span> <span class="function">developerCareer</span>() {
+                    <span class="keyword">const</span> skills = [{% for skill in hard_skills %}<span class="string">'{{ skill.name }}'</span>{% if not forloop.last %}, {% endif %}{% endfor %}];
+                    <span class="keyword">let</span> experience = <span class="number">{{ personal_info.years_of_experience }}</span>; <span class="comment">// années</span>
+                    <span class="keyword">let</span> passion = <span class="string">'infinite'</span>;
+
+                    <span class="keyword">while</span> (passion) {
+                        learnNewTechnologies();
+                        buildAmazingProjects();
+                        collaborateWithTeam();
+                        experience++;
+                    }
+
+                    <span class="keyword">return</span> <span class="string">'Successful and fulfilling career'</span>;
+                }
+
+                developerCareer(); <span class="comment">// Exécution en cours...</span>
+                {% elif code_language == 'java' %}
+                <span class="keyword">public class</span> <span class="function">DeveloperCareer</span> {
+                    <span class="keyword">public static void</span> <span class="function">main</span>(String[] args) {
+                        String[] skills = {{% for skill in hard_skills %}<span class="string">"{{ skill.name }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}};
+                        <span class="keyword">int</span> experience = <span class="number">{{ personal_info.years_of_experience }}</span>; <span class="comment">// années</span>
+                        String passion = <span class="string">"infinite"</span>;
+
+                        <span class="keyword">while</span> (passion.equals(<span class="string">"infinite"</span>)) {
+                            learnNewTechnologies();
+                            buildAmazingProjects();
+                            collaborateWithTeam();
+                            experience++;
+                        }
+
+                        System.out.println(<span class="string">"Successful and fulfilling career"</span>);
+                    }
+                }
+                {% endif %}
+            </div>
+
+            <h2>// Expérience Professionnelle</h2>
+            {% for experience in work_experience %}
+                <div class="experience-item">
+                    <p><span class="company">{{ experience.company }}</span> - {{ experience.position }}</p>
+                    <p class="date">{{ experience.start_date }} - {{ experience.end_date|default:'Présent' }}</p>
+                    <ul>
+                        {% for responsibility in experience.responsibilities.all %}
+                            <li>{{ responsibility.description }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+
+            <h2>// Projets Personnels</h2>
+            {% for project in projects %}
+                <div class="project-item">
+                    <p><span class="project-title">{{ project.title }}</span> - {{ project.short_description }}</p>
+                    <p>{{ project.long_description }}</p>
+                </div>
+            {% endfor %}
+
+            <h2>// Formation</h2>
+            {% for edu in education %}
+                <p><strong>{{ edu.degree }}</strong> - {{ edu.institution }}, {{ edu.graduation_year }}</p>
+            {% endfor %}
+
+            <h2>// Certifications</h2>
+            <ul>
+                {% for certification in certifications %}
+                    <li>{{ certification.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+      // Ajout d'animations subtiles pour améliorer l'expérience utilisateur
+      document.addEventListener('DOMContentLoaded', () => {
+        const tags = document.querySelectorAll('.tag');
+        tags.forEach(tag => {
+          tag.addEventListener('mouseover', () => {
+            tag.style.transform = 'scale(1.1)';
+            tag.style.transition = 'transform 0.3s ease';
+          });
+          tag.addEventListener('mouseout', () => {
+            tag.style.transform = 'scale(1)';
+          });
+        });
+  
+        // Animation du bloc de code
+        const codeBlock = document.querySelector('.code-block');
+        codeBlock.addEventListener('mouseover', () => {
+          codeBlock.style.boxShadow = '0 0 10px rgba(100, 255, 100, 0.3)';
+          codeBlock.style.transition = 'box-shadow 0.3s ease';
+        });
+        codeBlock.addEventListener('mouseout', () => {
+          codeBlock.style.boxShadow = 'none';
+        });
+      });
+    </script>
+</body>
+
+</html>
