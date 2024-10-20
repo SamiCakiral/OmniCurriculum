@@ -3,14 +3,32 @@ import axios from 'axios';
 import { Mosaic, MosaicWindow, MosaicContext } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import './editor-mosaic-theme.css';
+import JsonViewer from './JsonViewer';
+import ReactMarkdown from 'react-markdown';
 
-const EditorPanel = ({ file, content }) => (
-  <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
-    <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[var(--text-primary)]">
-      {content}
-    </pre>
-  </div>
-);
+const EditorPanel = ({ file, content }) => {
+  if (file.name.endsWith('.json')) {
+    return (
+      <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
+        <JsonViewer content={content} />
+      </div>
+    );
+  } else if (file.name.endsWith('.md')) {
+    return (
+      <div className="flex-1 bg-[var(--bg-primary)] overflow-y-auto p-4 text-[var(--text-primary)]">
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
+        <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[var(--text-primary)]">
+          {content}
+        </pre>
+      </div>
+    );
+  }
+};
 
 const Editor = ({ activeFiles, removeFile, showSettings, settingsContent }) => {
   const [fileContents, setFileContents] = useState({});
@@ -64,6 +82,10 @@ Technologies: ${proj.technologies.join(', ')}
 # Compétences
 ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
                   `;
+                break;
+              case 'Emplois/Stages':
+              case 'Personnel':
+                contents[file.name] = file.content;
                 break;
               default:
                 contents[file.name] = "Contenu non disponible";

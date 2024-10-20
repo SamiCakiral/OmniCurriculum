@@ -13,12 +13,14 @@ OmniCurriculum est une plateforme de CV interactive et multidimensionnelle, con�
 - **Génération de PDF** : Exportez votre CV en PDF à la volée 📄
 - **Intégration GitHub** : Affichez vos derniers projets en temps réel 🔄
 - **Design adaptatif** : Une expérience fluide sur tous les appareils 📱💻
+- **Multilingue** : Présentez votre CV en plusieurs langues 🌍
 
 ## Objectifs du projet 🎯
 1. Créer une expérience utilisateur unique et mémorable
 2. Démontrer des compétences techniques avancées en backend et en intégration
 3. Offrir une plateforme flexible pour présenter projets et compétences
 4. Se démarquer dans un océan de CV traditionnels
+5. Faciliter la personnalisation et la mise à jour du CV
 
 ## Stack technologique 🛠️
 - **Backend** : Python, Django, Django REST Framework
@@ -34,7 +36,9 @@ OmniCurriculum est une plateforme de CV interactive et multidimensionnelle, con�
 - [x] Configuration du frontend React avec React Router
 - [x] Intégration de Tailwind CSS pour le styling
 - [x] Création d'une page d'accueil interactive
-- [ ] Développement des thèmes multiples (VSCode, Apple, Instagram)
+- [x] Développement du thème VSCode
+- [x] Implémentation du support multilingue
+- [ ] Développement des thèmes Apple et Instagram
 - [ ] Implémentation de la génération de PDF
 - [ ] Intégration de l'API GitHub
 - [ ] Système de gestion de contenu pour faciliter les mises à jour
