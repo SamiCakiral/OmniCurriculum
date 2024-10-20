@@ -1,12 +1,12 @@
 import React from 'react';
 import { DocumentDuplicateIcon, TerminalIcon, PrinterIcon, DocumentDownloadIcon, AdjustmentsIcon, CogIcon } from '@heroicons/react/outline';
 
-const SideBar = ({ setShowExplorer, setShowConsole, openSettings }) => {
+const SideBar = ({ setShowExplorer, setShowConsole, openSettings, openCVPanel }) => {
   const icons = [
     { Icon: DocumentDuplicateIcon, action: () => setShowExplorer(prev => !prev), label: 'Toggle Explorer' },
     { Icon: TerminalIcon, action: () => setShowConsole(prev => !prev), label: 'Toggle Console' },
     { Icon: PrinterIcon, action: () => window.print(), label: 'Print CV' },
-    { Icon: DocumentDownloadIcon, action: () => alert('PDF generation not implemented'), label: 'Download PDF' },
+    { Icon: DocumentDownloadIcon, action: openCVPanel, label: 'View and Download CV' },
     { Icon: AdjustmentsIcon, action: () => alert('Theme settings not implemented'), label: 'Theme Settings' },
     { Icon: CogIcon, action: openSettings, label: 'Paramètres' }
   ];

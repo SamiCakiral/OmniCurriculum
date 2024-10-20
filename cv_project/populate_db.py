@@ -49,108 +49,94 @@ def populate_db():
     Skill.objects.all().delete()
     Project.objects.all().delete()
     
-    
     # PersonalInfo
     PersonalInfo.objects.create(
-        name="Remplissez avec votre nom complet. Par exemple : Jean-Claude Van Damme",
-        email="Votre email professionnel. Exemple : muscles@kickboxing.com",
-        phone="Votre numéro de téléphone. Par exemple : 0123456789 (appelez-moi pour des cours de karaté)",
-        summary="Écrivez un résumé accrocheur. Par exemple : Je suis un ingénieur en devenir, tellement dévoué que j'ai créé ce site web pour le prouver. Si je peux coder, je peux tout faire !"
+        name="Jean Dupont",
+        email="jean.dupont@email.com",
+        phone="+33 6 12 34 56 78",
+        summary="Ingénieur en développement logiciel passionné avec 5 ans d'expérience. Spécialisé en Python et technologies web, je cherche à relever de nouveaux défis techniques dans une équipe innovante."
     )
 
     # Education
     Education.objects.create(
-        institution="Votre école. Exemple : École Nationale Supérieure des Arts et Métiers du Rire",
-        degree="Votre diplôme actuel ou visé. Exemple : Master en Ingénierie des Blagues",
-        field_of_study="Votre domaine d'étude. Exemple : Humour Appliqué à l'Ingénierie",
-        start_date=timezone.now().date() - timedelta(days=1825),
+        institution="École Polytechnique",
+        degree="Diplôme d'ingénieur",
+        field_of_study="Informatique et Sciences des Données",
+        start_date=timezone.now().date() - timedelta(days=2190),
         end_date=timezone.now().date() - timedelta(days=1095)
     )
     Education.objects.create(
-        institution="Votre école précédente. Exemple : Lycée des Comiques en Herbe",
-        degree="Votre diplôme précédent. Exemple : Baccalauréat Scientifique option Jonglerie",
-        field_of_study="Votre domaine d'étude précédent. Exemple : Sciences du Rire",
-        start_date=timezone.now().date() - timedelta(days=2555),
-        end_date=timezone.now().date() - timedelta(days=1825)
+        institution="Lycée Henri IV",
+        degree="Baccalauréat Scientifique",
+        field_of_study="Spécialité Mathématiques",
+        start_date=timezone.now().date() - timedelta(days=2920),
+        end_date=timezone.now().date() - timedelta(days=2555)
     )
 
     # WorkExperience
     WorkExperience.objects.create(
-        company="Nom de l'entreprise. Exemple : MegaCorp Innovations Futuristes",
-        position="Votre poste. Exemple : Stagiaire Ninja du Café",
+        company="TechInnovate Solutions",
+        position="Développeur Full Stack Senior",
         start_date=timezone.now().date() - timedelta(days=730),
-        description="Description de vos responsabilités. Exemple : Maître dans l'art de préparer le café parfait tout en résolvant des équations différentielles. Expert en organisation de réunions où personne ne s'endort (grâce au café susmentionné)."
+        description="Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux."
     )
     WorkExperience.objects.create(
-        company="Autre entreprise. Exemple : Startup des Rêves Impossibles",
-        position="Autre poste. Exemple : Architecte en Châteaux de Cartes Numériques",
+        company="DataViz Corp",
+        position="Ingénieur Logiciel",
         start_date=timezone.now().date() - timedelta(days=1460),
         end_date=timezone.now().date() - timedelta(days=730),
-        description="Description humoristique. Exemple : Concepteur de structures de données aussi stables que des châteaux de cartes. Spécialiste en jonglage de bugs et en équilibrage d'algorithmes sur la pointe d'une aiguille."
+        description="Conception et implémentation de solutions de visualisation de données pour le secteur financier. Utilisation de Python, D3.js et PostgreSQL."
     )
     WorkExperience.objects.create(
-        company="Entreprise précédente. Exemple : L'Usine à Gags Technologiques",
-        position="Poste précédent. Exemple : Apprenti Sorcier du Code",
+        company="StartUpNow",
+        position="Développeur Junior",
         start_date=timezone.now().date() - timedelta(days=1825),
         end_date=timezone.now().date() - timedelta(days=1460),
-        description="Description amusante. Exemple : Responsable de la transformation de bugs en features et de café en code. Expert en invocation de solutions créatives à des problèmes inexistants."
+        description="Participation au développement d'une application mobile de gestion de tâches. Travail en méthode Agile et utilisation de React Native."
     )
 
     # Skills
     skills = [
-        "Programmation en Python (je peux faire parler les serpents)",
-        "JavaScript Ninja (je code plus vite que mon ombre)",
-        "Maître Jedi de React (que la force du state soit avec vous)",
-        "Dompteur de Node.js (je fais courir les serveurs comme des hamsters)",
-        "Jongleur de Docker (je containerise même mes repas)",
-        "Pilote de Kubernetes (capitaine de l'orchestre des conteneurs)",
-        "Magicien AWS (je fais apparaître des serveurs comme par magie)",
-        "Explorateur de Google Cloud (à la recherche du Big Data perdu)",
-        "Dresseur de TensorFlow (mes modèles sont bien élevés)",
-        "Alchimiste PyTorch (je transforme les données en or)",
-        "SQL Whisperer (je parle couramment le langage des bases de données)",
-        "Dompteur de MongoDB (mes documents sont bien dressés)",
-        "Maître Git (je contrôle les versions mieux que Doctor Who)",
-        "Acrobate du CI/CD (je déploie en salto arrière)",
-        "Gourou Agile/Scrum (je sprinte plus vite que Usain Bolt)"
+        "Python", "Django", "Flask", "JavaScript", "React", "Node.js",
+        "Docker", "Kubernetes", "AWS", "Git", "SQL", "MongoDB",
+        "Machine Learning", "Data Analysis", "RESTful APIs"
     ]
     for skill in skills:
         Skill.objects.create(name=skill)
 
     # Langues
     languages = [
-        "Anglais : Courant (même avec l'accent de la Reine)",
-        "Espagnol : Intermédiaire (je peux commander une paella sans incident diplomatique)",
-        "Français : Natif (oui, je sais dire plus que 'omelette du fromage')",
-        "Klingon : Notions (utile pour les réunions d'équipe tendues)"
+        "Anglais : Courant (TOEIC 950)",
+        "Espagnol : Intermédiaire",
+        "Français : Langue maternelle"
     ]
     for language in languages:
         Skill.objects.create(name=language)
 
     # Soft skills
     soft_skills = [
-        "Résolution de problèmes (même ceux qui n'existent pas encore)",
-        "Travail d'équipe (je peux coder en pair programming avec moi-même)",
-        "Communication (je parle couramment le langage des machines)",
-        "Adaptabilité (je peux travailler efficacement même sans café... pendant 5 minutes)",
-        "Créativité (j'invente des bugs pour pouvoir les résoudre ensuite)"
+        "Résolution de problèmes complexes",
+        "Travail d'équipe",
+        "Communication technique",
+        "Gestion de projet",
+        "Apprentissage rapide"
     ]
     for skill in soft_skills:
         Skill.objects.create(name=skill)
 
     # Projects
     Project.objects.create(
-        title="SkyNet 2.0 - L'IA qui fait le café",
-        description="Développement d'une IA révolutionnaire capable de préparer le café parfait tout en prédisant la fin du monde. Heureusement, elle est trop occupée à faire du café pour mettre ses plans à exécution.",
-        url="https://github.com/skynet-cafe-edition"
+        title="Plateforme d'Analyse Prédictive pour E-commerce",
+        description="Développement d'une solution d'analyse prédictive pour optimiser les stocks et les ventes d'une plateforme e-commerce. Utilisation de Python, scikit-learn et Django pour le backend, et React pour le frontend.",
+        url="https://github.com/jeandupont/ecommerce-predictor"
     )
     Project.objects.create(
-        title="Application de Téléportation Quantique des Bugs",
-        description="Création d'une application qui téléporte magiquement les bugs de votre code vers celui de vos concurrents. Utilise une combinaison de magie noire, de physique quantique et de beaucoup de chance.",
-        url="https://github.com/bug-be-gone"
+        title="Application Mobile de Suivi Fitness",
+        description="Création d'une application mobile cross-platform pour le suivi d'activités sportives et de nutrition. Développée avec React Native et intégration d'une API RESTful personnalisée.",
+        url="https://github.com/jeandupont/fitness-tracker-app"
     )
 
-    print("Base de données peuplée avec succès!")
+    print("Base de données peuplée avec succès avec des données réalistes!")
 
 if __name__ == '__main__':
     populate_db()

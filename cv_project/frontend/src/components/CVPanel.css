@@ -1,0 +1,253 @@
+.cv-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.cv-panel {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+}
+
+.cv-panel-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.cv-preview {
+  flex: 2;
+  overflow: auto;
+}
+
+.cv-options {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #f0f0f0;
+}
+
+.download-button, .theme-button {
+  padding: 10px 20px;
+  margin: 10px 0;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.download-button:hover, .theme-button:hover {
+  background-color: #45a049;
+}
+
+.theme-button {
+  background-color: #3498db;
+}
+
+.theme-button:hover {
+  background-color: #2980b9;
+}
+
+.cv-content {
+  font-family: 'Fira Code', monospace;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+  width: 250px;
+  padding: 2rem;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+}
+
+/* Styles pour le thème sombre */
+.cv-content.dark {
+  color: #d4d4d4;
+  background-color: #1e1e1e;
+}
+
+.cv-content.dark .sidebar {
+  background-color: #252526;
+}
+
+.cv-content.dark .main-content {
+  background-color: #1e1e1e;
+}
+
+.cv-content.dark h1, .cv-content.dark h2, .cv-content.dark h3 {
+  color: #569CD6;
+}
+
+/* Styles pour le thème clair */
+.cv-content.light {
+  color: #333;
+  background-color: white;
+}
+
+.cv-content.light .sidebar {
+  background-color: #f0f0f0;
+}
+
+.cv-content.light .main-content {
+  background-color: white;
+}
+
+.cv-content.light h1, .cv-content.light h2, .cv-content.light h3 {
+  color: #2c3e50;
+}
+
+/* Styles communs */
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #3498db;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  margin: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.experience-item, .project-item {
+  margin-bottom: 1.5rem;
+}
+
+.company, .project-title {
+  font-weight: bold;
+}
+
+.date {
+  font-style: italic;
+}
+
+@media print {
+  .cv-panel-overlay, .cv-options, .close-button {
+    display: none;
+  }
+
+  .cv-content {
+    padding: 0;
+  }
+}
+
+/* Styles pour le format README */
+.cv-content.readme {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cv-content.readme.dark {
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+.cv-content.readme.light {
+  background-color: #ffffff;
+  color: #24292e;
+}
+
+.cv-content.readme h1 {
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 0.3em;
+}
+
+.cv-content.readme h2 {
+  border-bottom: 1px solid #30363d;
+  padding-bottom: 0.3em;
+}
+
+.cv-content.readme.dark h1,
+.cv-content.readme.dark h2,
+.cv-content.readme.dark h3 {
+  color: #58a6ff;
+}
+
+.cv-content.readme.light h1,
+.cv-content.readme.light h2,
+.cv-content.readme.light h3 {
+  color: #0366d6;
+}
+
+.cv-content.readme ul {
+  padding-left: 2em;
+}
+
+.cv-content.readme li {
+  margin-bottom: 0.25em;
+}
+
+.cv-content.readme a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.cv-content.readme a:hover {
+  text-decoration: underline;
+}
+
+.format-button {
+  padding: 10px 20px;
+  margin: 10px 0;
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.format-button:hover {
+  background-color: #8e44ad;
+}

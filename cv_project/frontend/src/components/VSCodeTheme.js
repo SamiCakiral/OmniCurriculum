@@ -5,8 +5,9 @@ import Editor from './VSCodeComponents/Editor';
 import Console from './VSCodeComponents/Console';
 import StatusBar from './VSCodeComponents/StatusBar';
 import Chronologie from './VSCodeComponents/Chronologie';
-import './vscode-custom-layout.css';
 import Settings from './VSCodeComponents/Settings';
+import CVPanel from './CVPanel';
+import './vscode-custom-layout.css';
 
 const VSCodeTheme = () => {
   const [activeFiles, setActiveFiles] = useState([]);
@@ -14,6 +15,7 @@ const VSCodeTheme = () => {
   const [showConsole, setShowConsole] = useState(true);
   const [theme, setTheme] = useState('dark');
   const [showSettings, setShowSettings] = useState(false);
+  const [showCVPanel, setShowCVPanel] = useState(false);
   
   const explorerChronologieRef = useRef(null);
   const explorerRef = useRef(null);
@@ -37,6 +39,10 @@ const VSCodeTheme = () => {
   const openSettings = () => {
     setShowSettings(true);
     addActiveFile({ section: 'Paramètres', name: 'settings.json' });
+  };
+
+  const openCVPanel = () => {
+    setShowCVPanel(true);
   };
 
   useEffect(() => {
@@ -130,6 +136,7 @@ const VSCodeTheme = () => {
           setShowExplorer={setShowExplorer}
           setShowConsole={setShowConsole}
           openSettings={openSettings}
+          openCVPanel={openCVPanel}
         />
         <div className="vscode-content">
           {showExplorer && (
@@ -167,6 +174,7 @@ const VSCodeTheme = () => {
         </div>
       </div>
       <StatusBar />
+      <CVPanel isOpen={showCVPanel} onClose={() => setShowCVPanel(false)} />
     </div>
   );
 };
