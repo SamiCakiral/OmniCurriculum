@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Chronologie = () => {
+const Chronologie = ({ language, addActiveFile }) => {
   const [chronologieItems, setChronologieItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -9,23 +9,31 @@ const Chronologie = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [education, workExperience] = await Promise.all([
-          axios.get('http://localhost:8000/api/education/'),
-          axios.get('http://localhost:8000/api/work-experience/')
+        const [education, workExperience, projects] = await Promise.all([
+          axios.get(`http://localhost:8000/api/education/?lang=${language}`),
+          axios.get(`http://localhost:8000/api/work-experience/?lang=${language}`),
+          axios.get(`http://localhost:8000/api/projects/?lang=${language}`)
         ]);
 
         const items = [
           ...education.data.map(edu => ({
-            title: edu.institution,
-            date: edu.start_date,
+            title: edu.degree,
+            subtitle: edu.institution,
+            startDate: edu.start_date,
+            endDate: edu.end_date,
+            description: edu.description,
             type: 'education'
           })),
           ...workExperience.data.map(exp => ({
             title: exp.position,
-            date: exp.start_date,
-            type: 'work'
+            subtitle: exp.company,
+            startDate: exp.start_date,
+            endDate: exp.end_date,
+            description: exp.description,
+            type: 'work',
+            relatedProjects: projects.data.filter(proj => proj.work_experience === exp.id)
           }))
-        ].sort((a, b) => new Date(b.date) - new Date(a.date));
+        ].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
         setChronologieItems(items);
         setIsLoading(false);
@@ -37,7 +45,19 @@ const Chronologie = () => {
     };
 
     fetchData();
-  }, []);
+  }, [language]);
+
+  const handleItemClick = (item) => {
+    if (item.type === 'work' && item.relatedProjects && item.relatedProjects.length > 0) {
+      item.relatedProjects.forEach(project => {
+        addActiveFile({
+          section: 'Projets',
+          name: project.title,
+          content: project.long_description
+        });
+      });
+    }
+  };
 
   if (isLoading) return <div className="p-4">Chargement de la chronologie...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -48,12 +68,17 @@ const Chronologie = () => {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col space-y-4">
           {chronologieItems.map((item, index) => (
-            <div key={index} className="flex items-center">
-              <div className={`w-3 h-3 rounded-full ${item.type === 'education' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-              <div className="w-10 h-px bg-gray-600 mx-2"></div>
+            <div key={index} className="flex items-start cursor-pointer" onClick={() => handleItemClick(item)}>
+              <div className={`w-3 h-3 mt-1 rounded-full ${item.type === 'education' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+              <div className="w-10 h-px bg-gray-600 mx-2 mt-2"></div>
               <div className="flex flex-col">
-                <div className="text-xs whitespace-nowrap">{item.title}</div>
-                <div className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</div>
+                <div className="text-sm font-semibold">{item.title}</div>
+                <div className="text-xs">{item.subtitle}</div>
+                <div className="text-xs text-gray-500">
+                  {new Date(item.startDate).toLocaleDateString()} - 
+                  {item.endDate ? new Date(item.endDate).toLocaleDateString() : 'Présent'}
+                </div>
+                <div className="text-xs mt-1">{item.description}</div>
               </div>
             </div>
           ))}

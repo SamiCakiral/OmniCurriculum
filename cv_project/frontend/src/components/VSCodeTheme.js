@@ -9,7 +9,7 @@ import Settings from './VSCodeComponents/Settings';
 import CVPanel from './CVPanel';
 import './vscode-custom-layout.css';
 
-const VSCodeTheme = () => {
+const VSCodeTheme = ({ language, setLanguage }) => {
   const [activeFiles, setActiveFiles] = useState([]);
   const [showExplorer, setShowExplorer] = useState(true);
   const [showConsole, setShowConsole] = useState(true);
@@ -143,11 +143,11 @@ const VSCodeTheme = () => {
             <>
               <div ref={explorerChronologieRef} className="vscode-explorer-chronologie">
                 <div ref={explorerRef} className="vscode-explorer">
-                  <Explorer addActiveFile={addActiveFile} />
+                  <Explorer addActiveFile={addActiveFile} language={language} />
                 </div>
                 <div ref={resizerExplorerChronologieRef} className="resizer-v"></div>
                 <div ref={chronologieRef} className="vscode-chronologie">
-                  <Chronologie />
+                <Chronologie language={language} addActiveFile={addActiveFile} />
                 </div>
               </div>
               <div ref={resizerHorizontalRef} className="resizer-h"></div>
@@ -159,14 +159,22 @@ const VSCodeTheme = () => {
                 activeFiles={activeFiles} 
                 removeFile={removeActiveFile}
                 showSettings={showSettings}
-                settingsContent={<Settings currentTheme={theme} setTheme={setTheme} />}
+                settingsContent={
+                  <Settings 
+                    currentTheme={theme} 
+                    setTheme={setTheme}
+                    currentLanguage={language}
+                    setLanguage={setLanguage}
+                  />
+                }
+                language={language}
               />
             </div>
             {showConsole && (
               <>
                 <div ref={resizerVerticalRef} className="resizer-v"></div>
                 <div ref={consoleRef} className="vscode-console">
-                  <Console />
+                  <Console language={language} />
                 </div>
               </>
             )}
@@ -174,7 +182,7 @@ const VSCodeTheme = () => {
         </div>
       </div>
       <StatusBar />
-      <CVPanel isOpen={showCVPanel} onClose={() => setShowCVPanel(false)} />
+      <CVPanel isOpen={showCVPanel} onClose={() => setShowCVPanel(false)} language={language} />
     </div>
   );
 };

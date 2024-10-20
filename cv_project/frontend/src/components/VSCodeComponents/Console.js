@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Console = () => {
+const Console = ({ language }) => {
   const [personalInfo, setPersonalInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -10,7 +10,7 @@ const Console = () => {
     const fetchPersonalInfo = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:8000/api/personal-info/');
+        const response = await axios.get(`http://localhost:8000/api/personal-info/?lang=${language}`);
         if (response.data.length > 0) {
           setPersonalInfo(response.data[0]);
         }
@@ -23,7 +23,7 @@ const Console = () => {
     };
 
     fetchPersonalInfo();
-  }, []);
+  }, [language]);
 
   if (isLoading) return <div className="h-full bg-[var(--bg-primary)] text-[var(--accent-color)] p-4">Chargement des informations personnelles...</div>;
   if (error) return <div className="h-full bg-[var(--bg-primary)] text-red-500 p-4">{error}</div>;
@@ -37,8 +37,15 @@ const Console = () => {
           {`> console.log(personalInfo)
 {
   name: "${personalInfo.name}",
+  title: "${personalInfo.title}",
   email: "${personalInfo.email}",
   phone: "${personalInfo.phone}",
+  years_of_experience: ${personalInfo.years_of_experience},
+  has_vehicle: ${personalInfo.has_vehicle},
+  region: "${personalInfo.region}",
+  linkedin_url: "${personalInfo.linkedin_url}",
+  github_url: "${personalInfo.github_url}",
+  github_username: "${personalInfo.github_username}",
   summary: "${personalInfo.summary}"
 }`}
         </pre>

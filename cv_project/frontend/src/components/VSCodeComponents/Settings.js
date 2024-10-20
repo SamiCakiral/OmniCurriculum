@@ -1,9 +1,14 @@
 import React from 'react';
 
-const Settings = ({ currentTheme, setTheme }) => {
+const Settings = ({ currentTheme, setTheme, currentLanguage, setLanguage }) => {
   const themes = [
     { name: 'Sombre', value: 'dark' },
     { name: 'Clair', value: 'light' },
+  ];
+
+  const languages = [
+    { name: 'Français', value: 'fr' },
+    { name: 'English', value: 'en' },
   ];
 
   return (
@@ -19,6 +24,20 @@ const Settings = ({ currentTheme, setTheme }) => {
           {themes.map((theme) => (
             <option key={theme.value} value={theme.value}>
               {theme.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2">Langue :</label>
+        <select 
+          value={currentLanguage} 
+          onChange={(e) => setLanguage(e.target.value)}
+          className="bg-[var(--bg-tertiary)] text-[var(--text-primary)] p-2 rounded"
+        >
+          {languages.map((lang) => (
+            <option key={lang.value} value={lang.value}>
+              {lang.name}
             </option>
           ))}
         </select>
