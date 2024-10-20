@@ -139,13 +139,7 @@ const VSCodeTheme = () => {
           )}
           <div ref={editorConsoleRef} className="vscode-editor-console">
             <div className="vscode-editor">
-              {activeFiles.map((file, index) => (
-                <Editor 
-                  key={file.name} 
-                  file={file} 
-                  removeFile={removeActiveFile}
-                />
-              ))}
+              <Editor activeFiles={activeFiles} removeFile={removeActiveFile} />
             </div>
             {showConsole && (
               <>

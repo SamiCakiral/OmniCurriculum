@@ -1,0 +1,30 @@
+.mosaic-editor-theme {
+    background: #1e1e1e;
+    height: 100%;
+  }
+  
+  .mosaic-editor-theme .mosaic-window {
+    border: 1px solid #333;
+  }
+  
+  .mosaic-editor-theme .mosaic-window-toolbar {
+    background: #252526;
+    color: #cccccc;
+  }
+  
+  .mosaic-editor-theme .mosaic-window-body {
+    background: #1e1e1e;
+    color: #cccccc;
+  }
+  
+  .mosaic-editor-theme .mosaic-window-title {
+    color: #cccccc;
+  }
+  
+  .mosaic-editor-theme .mosaic-split {
+    background: #333;
+  }
+  
+  .mosaic-editor-theme .mosaic-split:hover {
+    background: #444;
+  }
