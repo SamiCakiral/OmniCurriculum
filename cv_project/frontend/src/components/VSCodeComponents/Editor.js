@@ -6,9 +6,6 @@ import './editor-mosaic-theme.css';
 
 const EditorPanel = ({ file, content }) => (
   <div className="flex-1 bg-[#1e1e1e] overflow-hidden flex flex-col">
-    <div className="bg-[#252526] px-4 py-2 text-sm border-b border-[#333333] flex justify-between items-center">
-      <span>{`${file.section}/${file.name}`}</span>
-    </div>
     <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[#cccccc]">
       {content}
     </pre>
