@@ -1,0 +1,163 @@
+.vscode-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1e1e1e;
+  color: #cccccc;
+}
+
+.vscode-topbar {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #3c3c3c;
+}
+
+.vscode-window-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.vscode-window-control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.vscode-window-control.close { background-color: #ff5f56; }
+.vscode-window-control.minimize { background-color: #ffbd2e; }
+.vscode-window-control.maximize { background-color: #27c93f; }
+
+.vscode-title {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.vscode-main {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.vscode-content {
+  display: flex;
+  flex-grow: 1;
+}
+
+.vscode-explorer-chronologie {
+  width: 250px; /* Largeur initiale */
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #252526;
+  overflow: hidden;
+}
+
+.vscode-explorer {
+  height: 60%; /* Hauteur initiale */
+  overflow: auto;
+}
+
+.vscode-chronologie {
+  height: 40%; /* Hauteur initiale */
+  overflow: auto;
+  border-top: 1px solid #252526;
+}
+
+.vscode-editor-console {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vscode-editor {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.vscode-console {
+  height: 200px; /* Hauteur initiale */
+  border-top: 1px solid #252526;
+  overflow: hidden;
+}
+
+/* Ajustez ces valeurs selon vos besoins */
+.vscode-explorer > *:first-child {
+  flex: 2;
+}
+
+.vscode-explorer > *:last-child {
+  flex: 1;
+}
+
+.vscode-editor-console > *:first-child {
+  flex: 3;
+}
+
+.vscode-editor-console > *:last-child {
+  flex: 1;
+}
+
+/* Styles pour les poignées de redimensionnement */
+.react-resizable-handle {
+  background-color: #333;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.react-resizable-handle:hover {
+  opacity: 1;
+}
+
+.react-resizable-handle-e {
+  right: 0;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.react-resizable-handle-s {
+  bottom: 0;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.resizer-h, .resizer-v {
+  position: relative;
+  background: transparent;
+}
+
+.resizer-h {
+  width: 1px;
+  cursor: ew-resize;
+}
+
+.resizer-v {
+  height: 1px;
+  cursor: ns-resize;
+}
+
+.resizer-h::after, .resizer-v::after {
+  content: "";
+  position: absolute;
+  background: #007acc;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.resizer-h::after {
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  right: -2px;
+}
+
+.resizer-v::after {
+  left: 0;
+  right: 0;
+  top: -2px;
+  bottom: -2px;
+}
+
+.resizer-h:hover::after, .resizer-v:hover::after {
+  opacity: 1;
+}

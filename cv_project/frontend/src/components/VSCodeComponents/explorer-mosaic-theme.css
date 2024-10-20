@@ -1,0 +1,25 @@
+.mosaic-explorer-theme {
+    background-color: #1e1e1e;
+  }
+  
+  .mosaic-explorer-theme .mosaic-window {
+    border: 1px solid #333333;
+  }
+  
+  .mosaic-explorer-theme .mosaic-window-toolbar {
+    background-color: #252526;
+    color: #cccccc;
+  }
+  
+  .mosaic-explorer-theme .mosaic-window-body {
+    background-color: #1e1e1e;
+    color: #cccccc;
+  }
+  
+  .mosaic-explorer-theme .mosaic-split.-row {
+    background-color: #333333;
+  }
+  
+  .mosaic-explorer-theme .mosaic-split.-column {
+    background-color: #333333;
+  }
