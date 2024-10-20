@@ -11,11 +11,10 @@ const StatusBar = () => {
         const response = await axios.get('http://localhost:8000/api/skills/');
         const allSkills = response.data;
         
-        // Séparer les compétences techniques et les langues
         const techSkills = allSkills.filter(skill => !['English', 'French', 'Spanish', 'Turkish'].includes(skill.name));
         const langs = allSkills.filter(skill => ['English', 'French', 'Spanish', 'Turkish'].includes(skill.name));
         
-        setSkills(techSkills.slice(0, 3)); // Afficher seulement les 3 premières compétences
+        setSkills(techSkills.slice(0, 3));
         setLanguages(langs);
       } catch (error) {
         console.error('Error fetching skills and languages:', error);
@@ -26,18 +25,18 @@ const StatusBar = () => {
   }, []);
 
   return (
-    <div className="bg-blue-600 text-white text-xs flex items-center justify-between px-4 py-1">
+    <div className="bg-[var(--bg-tertiary)] text-[var(--text-secondary)] text-xs flex items-center justify-between px-4 py-1">
       <div className="flex space-x-4">
         {skills.map((skill, index) => (
-          <span key={index}>{skill.name}</span>
+          <span key={index} className="hover:text-[var(--text-primary)]">{skill.name}</span>
         ))}
       </div>
       <div className="flex space-x-4">
         {languages.map((lang, index) => (
-          <span key={index}>{lang.name}</span>
+          <span key={index} className="hover:text-[var(--text-primary)]">{lang.name}</span>
         ))}
       </div>
-      <div>Sami Cakiral CV</div>
+      <div className="hover:text-[var(--text-primary)]">Sami Cakiral CV</div>
     </div>
   );
 };

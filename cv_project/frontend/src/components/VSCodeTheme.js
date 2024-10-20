@@ -6,11 +6,14 @@ import Console from './VSCodeComponents/Console';
 import StatusBar from './VSCodeComponents/StatusBar';
 import Chronologie from './VSCodeComponents/Chronologie';
 import './vscode-custom-layout.css';
+import Settings from './VSCodeComponents/Settings';
 
 const VSCodeTheme = () => {
   const [activeFiles, setActiveFiles] = useState([]);
   const [showExplorer, setShowExplorer] = useState(true);
   const [showConsole, setShowConsole] = useState(true);
+  const [theme, setTheme] = useState('dark');
+  const [showSettings, setShowSettings] = useState(false);
   
   const explorerChronologieRef = useRef(null);
   const explorerRef = useRef(null);
@@ -29,6 +32,11 @@ const VSCodeTheme = () => {
 
   const removeActiveFile = (fileName) => {
     setActiveFiles(activeFiles.filter(f => f.name !== fileName));
+  };
+
+  const openSettings = () => {
+    setShowSettings(true);
+    addActiveFile({ section: 'Paramètres', name: 'settings.json' });
   };
 
   useEffect(() => {
@@ -108,7 +116,7 @@ const VSCodeTheme = () => {
   }, []);
 
   return (
-    <div className="vscode-layout">
+    <div className={`vscode-layout ${theme}`}>
       <div className="vscode-topbar">
         <div className="vscode-window-controls">
           <div className="vscode-window-control close"></div>
@@ -121,6 +129,7 @@ const VSCodeTheme = () => {
         <SideBar 
           setShowExplorer={setShowExplorer}
           setShowConsole={setShowConsole}
+          openSettings={openSettings}
         />
         <div className="vscode-content">
           {showExplorer && (
@@ -139,7 +148,12 @@ const VSCodeTheme = () => {
           )}
           <div ref={editorConsoleRef} className="vscode-editor-console">
             <div className="vscode-editor">
-              <Editor activeFiles={activeFiles} removeFile={removeActiveFile} />
+              <Editor 
+                activeFiles={activeFiles} 
+                removeFile={removeActiveFile}
+                showSettings={showSettings}
+                settingsContent={<Settings currentTheme={theme} setTheme={setTheme} />}
+              />
             </div>
             {showConsole && (
               <>

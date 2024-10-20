@@ -25,13 +25,13 @@ const Console = () => {
     fetchPersonalInfo();
   }, []);
 
-  if (isLoading) return <div className="h-full bg-black text-green-400 p-4">Chargement des informations personnelles...</div>;
-  if (error) return <div className="h-full bg-black text-red-500 p-4">{error}</div>;
-  if (!personalInfo) return <div className="h-full bg-black text-yellow-500 p-4">Aucune information personnelle trouvée.</div>;
+  if (isLoading) return <div className="h-full bg-[var(--bg-primary)] text-[var(--accent-color)] p-4">Chargement des informations personnelles...</div>;
+  if (error) return <div className="h-full bg-[var(--bg-primary)] text-red-500 p-4">{error}</div>;
+  if (!personalInfo) return <div className="h-full bg-[var(--bg-primary)] text-yellow-500 p-4">Aucune information personnelle trouvée.</div>;
 
   return (
-    <div className="h-full bg-[#1e1e1e] text-[#cccccc] overflow-hidden flex flex-col">
-      <div className="bg-[#252526] px-4 py-2 text-xs font-bold uppercase tracking-wide">Console</div>
+    <div className="h-full bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden flex flex-col">
+      <div className="bg-[var(--bg-secondary)] px-4 py-2 text-xs font-bold uppercase tracking-wide">Console</div>
       <div className="flex-1 overflow-auto">
         <pre className="p-4 text-xs font-mono whitespace-pre-wrap">
           {`> console.log(personalInfo)

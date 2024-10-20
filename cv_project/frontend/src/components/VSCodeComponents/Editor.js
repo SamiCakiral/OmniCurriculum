@@ -5,14 +5,14 @@ import 'react-mosaic-component/react-mosaic-component.css';
 import './editor-mosaic-theme.css';
 
 const EditorPanel = ({ file, content }) => (
-  <div className="flex-1 bg-[#1e1e1e] overflow-hidden flex flex-col">
-    <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[#cccccc]">
+  <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
+    <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[var(--text-primary)]">
       {content}
     </pre>
   </div>
 );
 
-const Editor = ({ activeFiles, removeFile }) => {
+const Editor = ({ activeFiles, removeFile, showSettings, settingsContent }) => {
   const [fileContents, setFileContents] = useState({});
 
   useEffect(() => {
@@ -83,11 +83,26 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
   const renderTile = (id, path) => {
     const file = activeFiles.find(f => f.name === id);
     if (!file) return null;
+    
+    if (file.name === 'settings.json' && showSettings) {
+      return (
+        <MosaicWindow
+          path={path}
+          title="Paramètres"
+          toolbarControls={[<button key="close" onClick={() => removeFile('settings.json')} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">×</button>]}
+          className="bg-[var(--bg-secondary)]"
+        >
+          {settingsContent}
+        </MosaicWindow>
+      );
+    }
+
     return (
       <MosaicWindow
         path={path}
         title={`${file.section}/${file.name}`}
-        toolbarControls={[<button key="close" onClick={() => removeFile(file.name)}>×</button>]}
+        toolbarControls={[<button key="close" onClick={() => removeFile(file.name)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">×</button>]}
+        className="bg-[var(--bg-secondary)] text-[var(--text-primary)]"
       >
         <EditorPanel file={file} content={fileContents[file.name] || "Chargement..."} />
       </MosaicWindow>
@@ -109,7 +124,7 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
       <Mosaic
         renderTile={renderTile}
         initialValue={initialValue}
-        className="mosaic-editor-theme"
+        className="mosaic-editor-theme bg-[var(--bg-primary)]"
       />
     </MosaicContext.Provider>
   );

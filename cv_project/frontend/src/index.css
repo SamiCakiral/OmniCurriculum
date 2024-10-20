@@ -16,3 +16,51 @@ code {
     monospace;
 }
 
+/* Thème sombre (par défaut) */
+.vscode-layout {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #252526;
+  --bg-tertiary: #333333;
+  --text-primary: #cccccc;
+  --text-secondary: #858585;
+  --border-color: #474747;
+  --accent-color: #0e639c;
+  --hover-bg: #2a2d2e;
+  --active-bg: #37373d;
+  --input-bg: #3c3c3c;
+}
+
+/* Thème clair */
+.vscode-layout.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f3f3;
+  --bg-tertiary: #e4e4e4;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --border-color: #cccccc;
+  --accent-color: #007acc;
+  --hover-bg: #e8e8e8;
+  --active-bg: #d6d6d6;
+  --input-bg: #ffffff;
+}
+
+/* Appliquez ces variables aux éléments */
+.vscode-layout {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.vscode-sidebar {
+  background-color: var(--bg-tertiary);
+}
+
+.vscode-explorer, .vscode-editor, .vscode-console {
+  background-color: var(--bg-secondary);
+}
+
+.vscode-statusbar {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Ajoutez d'autres styles spécifiques selon vos besoins */

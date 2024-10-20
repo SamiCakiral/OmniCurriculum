@@ -43,8 +43,8 @@ const Chronologie = () => {
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="w-full h-full bg-[#252526] text-[#cccccc] flex flex-col overflow-hidden">
-      <div className="p-2 text-xs font-bold uppercase tracking-wide">Chronologie</div>
+    <div className="w-full h-full bg-[var(--bg-secondary)] text-[var(--text-primary)] flex flex-col overflow-hidden">
+      <div className="p-2 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">Chronologie</div>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col space-y-4">
           {chronologieItems.map((item, index) => (

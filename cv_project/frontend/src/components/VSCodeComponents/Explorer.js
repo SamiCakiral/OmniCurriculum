@@ -40,7 +40,7 @@ const Explorer = ({ addActiveFile }) => {
     return Object.entries(tree).map(([key, value]) => (
       <div key={key} className="ml-4">
         <div
-          className="flex items-center cursor-pointer hover:bg-gray-700 py-1"
+          className="flex items-center cursor-pointer hover:bg-[var(--hover-bg)] py-1"
           onClick={() => toggleFolder(key)}
         >
           <FolderIcon className="w-4 h-4 mr-2 text-yellow-500" />
@@ -49,7 +49,7 @@ const Explorer = ({ addActiveFile }) => {
         {expandedFolders[key] && value.map(file => (
           <div
             key={file}
-            className="flex items-center ml-4 cursor-pointer hover:bg-gray-700 py-1"
+            className="flex items-center ml-4 cursor-pointer hover:bg-[var(--hover-bg)] py-1"
             onClick={() => addActiveFile({ section: key, name: file })}
           >
             <DocumentTextIcon className="w-4 h-4 mr-2 text-blue-400" />
@@ -64,8 +64,8 @@ const Explorer = ({ addActiveFile }) => {
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="w-full h-full bg-[#1e1e1e] flex flex-col text-sm text-[#cccccc] overflow-y-auto">
-      <div className="p-2 text-xs font-bold uppercase tracking-wide">Explorer</div>
+    <div className="w-full h-full bg-[var(--bg-secondary)] flex flex-col text-sm text-[var(--text-primary)] overflow-y-auto">
+      <div className="p-2 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">Explorer</div>
       {renderTree(cvStructure)}
     </div>
   );
