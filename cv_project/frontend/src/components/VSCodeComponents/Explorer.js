@@ -126,6 +126,10 @@ Email: ${personalInfoData.email || 'Not specified'}
 Phone: ${personalInfoData.phone || 'Not specified'}
 Location: ${personalInfoData.location || 'Not specified'}
 ` 
+            },
+            'personalInfo.json': {
+              name: 'personalInfo.json',
+              content: JSON.stringify(personalInfoData, null, 2)
             }
           }
         });

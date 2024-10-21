@@ -86,6 +86,8 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     }
   };
 
+  const [cvStructure, setCvStructure] = useState({ '~': {} });
+
   return (
     <div className={`vscode-layout ${theme}`}>
       <div className="vscode-topbar">
@@ -169,7 +171,7 @@ const VSCodeTheme = ({ language, setLanguage }) => {
                     onMouseDown={handleResizeStart}
                   />
                   <div className="vscode-console" style={{ height: `${consoleHeight}px` }}>
-                    <Console language={language} />
+                    <Console language={language} cvStructure={cvStructure} setCvStructure={setCvStructure} />
                   </div>
                 </>
               )}
