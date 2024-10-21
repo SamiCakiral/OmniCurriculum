@@ -9,6 +9,7 @@ const CVPanel = ({ isOpen, onClose }) => {
   const [lang, setLang] = useState('fr'); // Ajout de l'état pour la langue
   const cvRef = useRef(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
     const fetchCVTemplate = async () => {
@@ -100,27 +101,39 @@ const CVPanel = ({ isOpen, onClose }) => {
 
   const toggleLang = () => {
     setLang(prevLang => prevLang === 'fr' ? 'en' : 'fr');
-    
+    // Réinitialiser l'URL du PDF lorsque la langue change
+    setPdfUrl('');
   };
+
+  useEffect(() => {
+    // Réinitialiser l'URL du PDF lorsque la langue change
+    setPdfUrl('');
+  }, [lang]);
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
-    const pdfUrl = `http://localhost:8000/api/generate-pdf/?lang=${lang}&theme=${theme}`;
+    const newPdfUrl = `http://localhost:8000/api/generate-pdf/?lang=${lang}&theme=${theme}`;
     
-    try {
-      const response = await axios.get(pdfUrl, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+    if (newPdfUrl !== pdfUrl) {
+      try {
+        const response = await axios.get(newPdfUrl, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        setPdfUrl(url);
+      } catch (error) {
+        console.error('Erreur lors de la génération du PDF:', error);
+      }
+    }
+    
+    if (pdfUrl) {
       const link = document.createElement('a');
-      link.href = url;
+      link.href = pdfUrl;
       link.setAttribute('download', 'cv.pdf');
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error);
-    } finally {
-      setIsGeneratingPDF(false);
     }
+    
+    setIsGeneratingPDF(false);
   };
 
   if (!isOpen) return null;

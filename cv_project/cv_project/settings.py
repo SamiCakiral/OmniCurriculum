@@ -13,9 +13,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from google.oauth2 import service_account
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
@@ -27,10 +28,9 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', os.getenv('GAE_APPLICATION', '') + '.appspot.com']
 
 # Application definition
 
@@ -87,12 +87,32 @@ WSGI_APPLICATION = "cv_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if os.getenv('GAE_APPLICATION', None):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': f'/cloudsql/{os.getenv("CLOUDSQL_CONNECTION_NAME")}',
+        }
     }
-}
+    
+    # Si vous décidez d'utiliser GCS plus tard
+    # GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+    # STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+    # STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    )
+else:
+    # Configuration pour le développement local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -117,9 +137,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "fr-fr"
+LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'fr-fr')
 
-TIME_ZONE = "Europe/Paris"
+TIME_ZONE = os.getenv('TIME_ZONE', 'Europe/Paris')
 
 USE_I18N = True
 
@@ -129,11 +149,34 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+if os.getenv('GAE_APPLICATION', None):
+    # Use Google Cloud Storage for static files in production
+    GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+    STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+    STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    GS_DEFAULT_ACL = 'publicRead'
+    
+    # Use service account for GCS
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    )
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = False  # Set to False in production
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development, configure properly for production
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'

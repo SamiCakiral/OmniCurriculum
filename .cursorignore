@@ -3,3 +3,12 @@ node_modules/
 frontend/node_modules/
 frontend/build/
 cv_project/cv/__pycache__/
+.env
+*.pyc
+__pycache__
+db.sqlite3
+/static
+/media
+*.log
+.DS_Store
+*.json
