@@ -1,12 +1,14 @@
 import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-const JsonViewer = ({ content }) => {
+const JsonViewer = ({ content, theme }) => {
+  const style = theme === 'light' ? vs : vscDarkPlus;
+
   return (
     <SyntaxHighlighter 
       language="json" 
-      style={vscDarkPlus}
+      style={style}
       customStyle={{
         margin: 0,
         padding: '1rem',

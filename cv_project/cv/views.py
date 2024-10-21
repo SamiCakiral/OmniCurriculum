@@ -54,7 +54,7 @@ def cv_view(request):
         'skills': Skill.objects.all(),
         'projects': Project.objects.all(),
     }
-    return render(request, 'cv_app/cv_template.html', context)
+    return render(request, 'cv/cv_template.html', context)
 
 def cv_api(request):
     context = {

@@ -41,14 +41,13 @@
 
 .vscode-content {
   display: flex;
-  flex-grow: 1;
+  height: 100%;
 }
 
 .vscode-explorer-chronologie {
-  width: 250px; /* Largeur initiale */
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #252526;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -64,10 +63,10 @@
 }
 
 .vscode-editor-console {
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  height: 100%;
+  flex-grow: 1;
 }
 
 .vscode-editor {
@@ -76,9 +75,7 @@
 }
 
 .vscode-console {
-  height: 200px; /* Hauteur initiale */
-  border-top: 1px solid #252526;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 
 /* Ajustez ces valeurs selon vos besoins */
@@ -127,13 +124,16 @@
 }
 
 .resizer-h {
-  width: 1px;
+  width: 5px;
+  background-color: var(--border-color);
   cursor: ew-resize;
 }
 
 .resizer-v {
-  height: 1px;
+  height: 5px;
+  background-color: var(--border-color);
   cursor: ns-resize;
+  user-select: none;
 }
 
 .resizer-h::after, .resizer-v::after {

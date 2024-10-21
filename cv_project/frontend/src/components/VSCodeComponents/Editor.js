@@ -4,33 +4,25 @@ import { Mosaic, MosaicWindow, MosaicContext } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import './editor-mosaic-theme.css';
 import JsonViewer from './JsonViewer';
-import ReactMarkdown from 'react-markdown';
+import MarkdownViewer from './MarkdownViewer';
 
-const EditorPanel = ({ file, content }) => {
-  if (file.name.endsWith('.json')) {
-    return (
-      <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
-        <JsonViewer content={content} />
-      </div>
-    );
-  } else if (file.name.endsWith('.md')) {
-    return (
-      <div className="flex-1 bg-[var(--bg-primary)] overflow-y-auto p-4 text-[var(--text-primary)]">
-        <ReactMarkdown>{content}</ReactMarkdown>
-      </div>
-    );
-  } else {
-    return (
-      <div className="flex-1 bg-[var(--bg-primary)] overflow-hidden flex flex-col">
-        <pre className="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto flex-1 text-[var(--text-primary)]">
+const EditorPanel = ({ file, content, theme }) => {
+  return (
+    <div className="h-full bg-[var(--bg-primary)] overflow-auto">
+      {file.name.endsWith('.json') ? (
+        <JsonViewer content={content} theme={theme} />
+      ) : file.name.endsWith('.md') ? (
+        <MarkdownViewer content={content} theme={theme} />
+      ) : (
+        <pre className="p-4 text-sm font-mono whitespace-pre-wrap text-[var(--text-primary)]">
           {content}
         </pre>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 };
 
-const Editor = ({ activeFiles, removeFile, showSettings, settingsContent }) => {
+const Editor = ({ activeFiles, removeFile, showSettings, settingsContent, theme, language }) => {
   const [fileContents, setFileContents] = useState({});
 
   useEffect(() => {
@@ -100,7 +92,7 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
     };
 
     fetchFileContents();
-  }, [activeFiles]);
+  }, [activeFiles, language]);
 
   const renderTile = (id, path) => {
     const file = activeFiles.find(f => f.name === id);
@@ -126,7 +118,7 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
         toolbarControls={[<button key="close" onClick={() => removeFile(file.name)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">×</button>]}
         className="bg-[var(--bg-secondary)] text-[var(--text-primary)]"
       >
-        <EditorPanel file={file} content={fileContents[file.name] || "Chargement..."} />
+        <EditorPanel file={file} content={fileContents[file.name] || "Chargement..."} theme={theme} />
       </MosaicWindow>
     );
   };
@@ -142,13 +134,15 @@ ${skills.map(skill => `- ${skill.name}: ${skill.level}/5`).join('\n')}
   }, null);
 
   return (
-    <MosaicContext.Provider>
-      <Mosaic
-        renderTile={renderTile}
-        initialValue={initialValue}
-        className="mosaic-editor-theme bg-[var(--bg-primary)]"
-      />
-    </MosaicContext.Provider>
+    <div className="h-full">
+      <MosaicContext.Provider value={{ mosaicActions: {}, mosaicId: 'my-mosaic' }}>
+        <Mosaic
+          renderTile={renderTile}
+          initialValue={initialValue}
+          className="mosaic-editor-theme bg-[var(--bg-primary)]"
+        />
+      </MosaicContext.Provider>
+    </div>
   );
 };
 

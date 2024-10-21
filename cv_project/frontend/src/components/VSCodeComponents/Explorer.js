@@ -39,24 +39,62 @@ const Explorer = ({ addActiveFile, language }) => {
         ]);
 
         const projectsData = projects.data.map(proj => ({
-          name: proj.title,
-          content: proj.long_description
+          name: `${proj.title || 'Untitled Project'}.md`,
+          content: `# ${proj.title || 'Untitled Project'}
+
+## Description
+${proj.long_description || 'No description available'}
+
+## Technologies
+${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : 'Not specified'}
+
+## Date
+${proj.start_date || 'Not specified'} - ${proj.end_date || 'Present'}
+
+## Link
+${proj.link || 'N/A'}
+`
         }));
 
         const workExperienceData = workExperience.data.map(exp => ({
-          name: `${exp.position} - ${exp.company}`,
-          content: exp.description
+          name: `${exp.position || 'Untitled Position'} - ${exp.company || 'Unnamed Company'}.md`,
+          content: `# ${exp.position || 'Untitled Position'} at ${exp.company || 'Unnamed Company'}
+
+## Period
+${exp.start_date || 'Not specified'} - ${exp.end_date || 'Present'}
+
+## Description
+${exp.description || 'No description available'}
+
+## Responsibilities
+${Array.isArray(exp.responsibilities) ? exp.responsibilities.join('\n') : 'Not specified'}
+
+## Achievements
+${Array.isArray(exp.achievements) ? exp.achievements.join('\n') : 'Not specified'}
+`
         }));
 
         const skillsData = {
-          "Hard Skills": skills.data.filter(skill => skill.type === 'hard').map(skill => skill.name),
-          "Soft Skills": skills.data.filter(skill => skill.type === 'soft').map(skill => skill.name)
+          "Hard Skills": skills.data.filter(skill => skill.type === 'hard').map(skill => `${skill.name}`),
+          "Soft Skills": skills.data.filter(skill => skill.type === 'soft').map(skill => `${skill.name}`)
         };
 
         const hobbiesData = hobbies.data.map(hobby => ({
-          name: `${hobby.name}.md`,
-          content: `# ${hobby.name}\n\n${hobby.description}`
+          name: `${hobby.name || 'Unnamed Hobby'}.md`,
+          content: `# ${hobby.name || 'Unnamed Hobby'}
+
+## Description
+${hobby.description || 'No description available'}
+
+## Frequency
+${hobby.frequency || 'Not specified'}
+
+## Why I enjoy it
+${hobby.reason || 'Not specified'}
+`
         }));
+
+        const personalInfoData = personalInfo.data[0] || {};
 
         setCvStructure({
           [t('Projects')]: projectsData,
@@ -69,7 +107,25 @@ const Explorer = ({ addActiveFile, language }) => {
             },
             'readAboutMe.md': { 
               name: 'readAboutMe.md', 
-              content: `# About Me\n\n${personalInfo.data[0].summary}` 
+              content: `# About Me
+
+## Summary
+${personalInfoData.summary || 'No summary available'}
+
+## Education
+${personalInfoData.education || 'Not specified'}
+
+## Career Objective
+${personalInfoData.career_objective || 'Not specified'}
+
+## Languages
+${Array.isArray(personalInfoData.languages) ? personalInfoData.languages.join(', ') : 'Not specified'}
+
+## Contact
+Email: ${personalInfoData.email || 'Not specified'}
+Phone: ${personalInfoData.phone || 'Not specified'}
+Location: ${personalInfoData.location || 'Not specified'}
+` 
             }
           }
         });
@@ -149,9 +205,11 @@ const Explorer = ({ addActiveFile, language }) => {
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="w-full h-full bg-[var(--bg-secondary)] flex flex-col text-sm text-[var(--text-primary)] overflow-y-auto">
+    <div className="w-full h-full bg-[var(--bg-secondary)] flex flex-col text-sm text-[var(--text-primary)] overflow-hidden">
       <div className="p-2 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">Explorer</div>
-      {renderTree(cvStructure)}
+      <div className="flex-1 overflow-y-auto">
+        {renderTree(cvStructure)}
+      </div>
     </div>
   );
 };

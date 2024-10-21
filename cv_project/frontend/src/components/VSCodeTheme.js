@@ -16,15 +16,14 @@ const VSCodeTheme = ({ language, setLanguage }) => {
   const [theme, setTheme] = useState('dark');
   const [showSettings, setShowSettings] = useState(false);
   const [showCVPanel, setShowCVPanel] = useState(false);
-  
+  const [consoleHeight, setConsoleHeight] = useState(300);
+  const minConsoleHeight = 0;
+  const maxConsoleHeight = 500;
+  const [explorerHeight, setExplorerHeight] = useState(300);
   const explorerChronologieRef = useRef(null);
-  const explorerRef = useRef(null);
-  const chronologieRef = useRef(null);
+
   const editorConsoleRef = useRef(null);
-  const consoleRef = useRef(null);
-  const resizerHorizontalRef = useRef(null);
-  const resizerVerticalRef = useRef(null);
-  const resizerExplorerChronologieRef = useRef(null);
+  const resizerRef = useRef(null);
 
   const addActiveFile = (file) => {
     if (!activeFiles.some(f => f.name === file.name)) {
@@ -45,81 +44,47 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     setShowCVPanel(true);
   };
 
-  useEffect(() => {
-    const resizeHorizontal = (e) => {
-      if (explorerChronologieRef.current && editorConsoleRef.current) {
-        const newWidth = e.clientX;
-        explorerChronologieRef.current.style.width = `${newWidth}px`;
-        editorConsoleRef.current.style.width = `calc(100% - ${newWidth}px)`;
-      }
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = consoleHeight;
+
+    const handleMouseMove = (e) => {
+      const deltaY = startY - e.clientY;
+      const newHeight = Math.max(minConsoleHeight, Math.min(startHeight + deltaY, maxConsoleHeight));
+      setConsoleHeight(newHeight);
     };
 
-    const resizeVertical = (e) => {
-      if (editorConsoleRef.current && consoleRef.current) {
-        const containerRect = editorConsoleRef.current.getBoundingClientRect();
-        const newHeight = containerRect.bottom - e.clientY;
-        consoleRef.current.style.height = `${newHeight}px`;
-      }
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    const resizeExplorerChronologie = (e) => {
-      if (explorerRef.current && chronologieRef.current) {
-        const containerRect = explorerChronologieRef.current.getBoundingClientRect();
-        const newExplorerHeight = e.clientY - containerRect.top;
-        explorerRef.current.style.height = `${newExplorerHeight}px`;
-        chronologieRef.current.style.height = `calc(100% - ${newExplorerHeight}px)`;
-      }
-    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
-    const stopResize = () => {
-      window.removeEventListener('mousemove', resizeHorizontal);
-      window.removeEventListener('mousemove', resizeVertical);
-      window.removeEventListener('mousemove', resizeExplorerChronologie);
-    };
+  const [explorerWidth, setExplorerWidth] = useState(250);
 
-    const initResizeHorizontal = (e) => {
-      e.preventDefault();
-      window.addEventListener('mousemove', resizeHorizontal);
-      window.addEventListener('mouseup', stopResize);
-    };
+  const handleExplorerResize = (e) => {
+    const newWidth = e.clientX;
+    setExplorerWidth(Math.max(200, Math.min(newWidth, 400))); // Limites min et max
+  };
 
-    const initResizeVertical = (e) => {
-      e.preventDefault(); // Empêche la sélection de texte pendant le redimensionnement
-      window.addEventListener('mousemove', resizeVertical);
-      window.addEventListener('mouseup', stopResize);
-    };
-
-    const initResizeExplorerChronologie = (e) => {
-      e.preventDefault();
-      window.addEventListener('mousemove', resizeExplorerChronologie);
-      window.addEventListener('mouseup', stopResize);
-    };
-
-    if (resizerHorizontalRef.current) {
-      resizerHorizontalRef.current.addEventListener('mousedown', initResizeHorizontal);
+  const handleExplorerChronologieResize = (e) => {
+    if (explorerChronologieRef.current) {
+      const container = explorerChronologieRef.current;
+      const containerRect = container.getBoundingClientRect();
+      const newHeight = e.clientY - containerRect.top;
+      const totalHeight = containerRect.height;
+      
+      // Assurez-vous que l'explorateur et la chronologie ont au moins 100px de hauteur
+      const minHeight = 100;
+      const maxHeight = totalHeight - minHeight;
+      
+      setExplorerHeight(Math.max(minHeight, Math.min(newHeight, maxHeight)));
     }
-
-    if (resizerVerticalRef.current) {
-      resizerVerticalRef.current.addEventListener('mousedown', initResizeVertical);
-    }
-
-    if (resizerExplorerChronologieRef.current) {
-      resizerExplorerChronologieRef.current.addEventListener('mousedown', initResizeExplorerChronologie);
-    }
-
-    return () => {
-      if (resizerHorizontalRef.current) {
-        resizerHorizontalRef.current.removeEventListener('mousedown', initResizeHorizontal);
-      }
-      if (resizerVerticalRef.current) {
-        resizerVerticalRef.current.removeEventListener('mousedown', initResizeVertical);
-      }
-      if (resizerExplorerChronologieRef.current) {
-        resizerExplorerChronologieRef.current.removeEventListener('mousedown', initResizeExplorerChronologie);
-      }
-      window.removeEventListener('mouseup', stopResize);
-    };
-  }, []);
+  };
 
   return (
     <div className={`vscode-layout ${theme}`}>
@@ -141,43 +106,74 @@ const VSCodeTheme = ({ language, setLanguage }) => {
         <div className="vscode-content">
           {showExplorer && (
             <>
-              <div ref={explorerChronologieRef} className="vscode-explorer-chronologie">
-                <div ref={explorerRef} className="vscode-explorer">
+              <div 
+                ref={explorerChronologieRef}
+                className="vscode-explorer-chronologie" 
+                style={{ width: `${explorerWidth}px` }}
+              >
+                <div style={{ height: `${explorerHeight}px`, overflow: 'auto' }}>
                   <Explorer addActiveFile={addActiveFile} language={language} />
                 </div>
-                <div ref={resizerExplorerChronologieRef} className="resizer-v"></div>
-                <div ref={chronologieRef} className="vscode-chronologie">
-                <Chronologie language={language} addActiveFile={addActiveFile} />
+                <div 
+                  className="resizer-v"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    const handleMouseMove = (moveEvent) => handleExplorerChronologieResize(moveEvent);
+                    const handleMouseUp = () => {
+                      document.removeEventListener('mousemove', handleMouseMove);
+                      document.removeEventListener('mouseup', handleMouseUp);
+                    };
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                  }}
+                ></div>
+                <div style={{ height: `calc(100% - ${explorerHeight}px - 5px)`, overflow: 'auto' }}>
+                  <Chronologie language={language} addActiveFile={addActiveFile} />
                 </div>
               </div>
-              <div ref={resizerHorizontalRef} className="resizer-h"></div>
+              <div 
+                className="resizer-h"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  document.addEventListener('mousemove', handleExplorerResize);
+                  document.addEventListener('mouseup', () => {
+                    document.removeEventListener('mousemove', handleExplorerResize);
+                  });
+                }}
+              ></div>
             </>
           )}
-          <div ref={editorConsoleRef} className="vscode-editor-console">
-            <div className="vscode-editor">
-              <Editor 
-                activeFiles={activeFiles} 
-                removeFile={removeActiveFile}
-                showSettings={showSettings}
-                settingsContent={
-                  <Settings 
-                    currentTheme={theme} 
-                    setTheme={setTheme}
-                    currentLanguage={language}
-                    setLanguage={setLanguage}
+          <div ref={editorConsoleRef} className="vscode-editor-console" style={{ width: `calc(100% - ${showExplorer ? explorerWidth + 5 : 0}px)` }}>
+            <div className="vscode-editor-console" style={{ height: `calc(100% - ${showConsole ? consoleHeight : 0}px)` }}>
+              <div className="vscode-editor" style={{ height: `calc(100% - ${showConsole ? consoleHeight : 0}px)` }}>
+                <Editor 
+                  activeFiles={activeFiles} 
+                  removeFile={removeActiveFile}
+                  showSettings={showSettings}
+                  settingsContent={
+                    <Settings 
+                      currentTheme={theme} 
+                      setTheme={setTheme}
+                      currentLanguage={language}
+                      setLanguage={setLanguage}
+                    />
+                  }
+                  language={language}
+                />
+              </div>
+              {showConsole && (
+                <>
+                  <div 
+                    ref={resizerRef}
+                    className="resizer-v"
+                    onMouseDown={handleResizeStart}
                   />
-                }
-                language={language}
-              />
+                  <div className="vscode-console" style={{ height: `${consoleHeight}px` }}>
+                    <Console language={language} />
+                  </div>
+                </>
+              )}
             </div>
-            {showConsole && (
-              <>
-                <div ref={resizerVerticalRef} className="resizer-v"></div>
-                <div ref={consoleRef} className="vscode-console">
-                  <Console language={language} />
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
