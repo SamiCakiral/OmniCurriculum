@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import html2pdf from 'html2pdf.js';
 import './CVPanel.css';
 
 const CVPanel = ({ isOpen, onClose }) => {
   const [cvContent, setCvContent] = useState('');
   const [cvData, setCvData] = useState(null);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
+  const [lang, setLang] = useState('fr'); // Ajout de l'état pour la langue
   const cvRef = useRef(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     const fetchCVTemplate = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/cv-html/');
+        const response = await axios.get(`http://localhost:8000/api/cv-html/?lang=${lang}&theme=${theme}`);
         setCvContent(response.data);
       } catch (error) {
         console.error('Erreur lors du chargement du template CV:', error);
@@ -23,11 +24,11 @@ const CVPanel = ({ isOpen, onClose }) => {
     const fetchCvData = async () => {
       try {
         const [personalInfo, education, workExperience, skills, projects] = await Promise.all([
-          axios.get('http://localhost:8000/api/personal-info/'),
-          axios.get('http://localhost:8000/api/education/'),
-          axios.get('http://localhost:8000/api/work-experience/'),
-          axios.get('http://localhost:8000/api/skills/'),
-          axios.get('http://localhost:8000/api/projects/')
+          axios.get(`http://localhost:8000/api/personal-info/?lang=${lang}`),
+          axios.get(`http://localhost:8000/api/education/?lang=${lang}`),
+          axios.get(`http://localhost:8000/api/work-experience/?lang=${lang}`),
+          axios.get(`http://localhost:8000/api/skills/?lang=${lang}`),
+          axios.get(`http://localhost:8000/api/projects/?lang=${lang}`)
         ]);
 
         setCvData({
@@ -46,7 +47,7 @@ const CVPanel = ({ isOpen, onClose }) => {
       fetchCVTemplate();
       fetchCvData();
     }
-  }, [isOpen]);
+  }, [isOpen, lang, theme]);
 
   useEffect(() => {
     if (cvContent && cvData) {
@@ -97,20 +98,29 @@ const CVPanel = ({ isOpen, onClose }) => {
     setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
   };
 
-  const handlePrint = () => {
-    window.print();
+  const toggleLang = () => {
+    setLang(prevLang => prevLang === 'fr' ? 'en' : 'fr');
+    
   };
 
-  const handleDownloadPDF = () => {
-    const element = cvRef.current;
-    const opt = {
-      margin:       10,
-      filename:     'CV.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(element).save();
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    const pdfUrl = `http://localhost:8000/api/generate-pdf/?lang=${lang}&theme=${theme}`;
+    
+    try {
+      const response = await axios.get(pdfUrl, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'cv.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -130,12 +140,19 @@ const CVPanel = ({ isOpen, onClose }) => {
             <button className="theme-button" onClick={toggleTheme}>
               Thème : {theme === 'dark' ? 'Sombre' : 'Clair'}
             </button>
-            <button className="print-button" onClick={handlePrint}>
-              Imprimer le CV
+            <button className="theme-button" onClick={toggleLang}>
+              Langue : {lang === 'fr' ? 'Français' : 'English'}
             </button>
-            <button className="download-button" onClick={handleDownloadPDF}>
-              Télécharger en PDF
-            </button>
+            {isGeneratingPDF ? (
+              <div className="loading-pdf">
+                <div className="spinner"></div>
+                <p>Génération de votre PDF en cours...</p>
+              </div>
+            ) : (
+              <button className="download-button" onClick={handleDownloadPDF}>
+                Télécharger le CV en PDF
+              </button>
+            )}
           </div>
         </div>
       </div>
