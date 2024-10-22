@@ -1,7 +1,10 @@
 import os
 import sys
 import django
+import json
 from django.core.management import execute_from_command_line
+from django.utils import timezone
+from datetime import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cv_project.settings')
 django.setup()
@@ -11,8 +14,6 @@ from django.db import connections
 from django.db.utils import OperationalError
 
 from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
-from django.utils import timezone
-from datetime import timedelta
 
 def check_database_connection():
     db_conn = connections['default']
@@ -26,7 +27,6 @@ def check_and_create_migrations():
         print("Création des migrations pour l'application 'cv'...")
         execute_from_command_line(['manage.py', 'makemigrations', 'cv'])
         
-        # Vérifier si les fichiers de migration ont été créés
         cv_app = apps.get_app_config('cv')
         if not os.path.exists(os.path.join(cv_app.path, 'migrations')):
             os.makedirs(os.path.join(cv_app.path, 'migrations'))
@@ -38,9 +38,24 @@ def check_and_create_migrations():
         print(f"Erreur lors de la création ou de l'application des migrations : {e}")
         sys.exit(1)
 
+def load_data():
+    try: # Si vous avez rempli un fichier avec vos infos personnelles, vous trouverez vos données
+        with open('personal_data.json', 'r', encoding='utf-8') as file: 
+            return json.load(file) 
+    except FileNotFoundError:
+        print("personal_data.json non trouvé, utilisation de fictional_data.json")
+        try: # Sinon vous aurez un fichier avec des données fictives
+            with open('fictional_data.json', 'r', encoding='utf-8') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print("fictional_data.json non trouvé")
+            sys.exit("Aucun fichier de données trouvé")
+
 def populate_db():
     check_database_connection()
     check_and_create_migrations()
+    
+    data = load_data()
     
     # Suppression des données existantes
     PersonalInfo.objects.all().delete()
@@ -53,165 +68,81 @@ def populate_db():
     Certification.objects.all().delete()
     
     # PersonalInfo
-    personal_info = {
-        'fr': {
-            'name': "Jean Dupont",
-            'title': "Ingénieur en Développement Logiciel",
-            'email': "jean.dupont@email.com",
-            'phone': "+33 6 12 34 56 78",
-            'summary': "Ingénieur en développement logiciel passionné avec 5 ans d'expérience. Spécialisé en Python et technologies web, je cherche à relever de nouveaux défis techniques dans une équipe innovante.",
-            'years_of_experience': 5,
-            'has_vehicle': True,
-            'region': "Paris, France",
-            'linkedin_url': "https://www.linkedin.com/in/jeandupont",
-            'github_url': "https://github.com/jeandupont",
-            'github_username': "jeandupont"
-        },
-        'en': {
-            'name': "John Smith",
-            'title': "Software Development Engineer",
-            'email': "john.smith@email.com",
-            'phone': "+1 (555) 123-4567",
-            'summary': "Passionate software development engineer with 5 years of experience. Specialized in Python and web technologies, I'm looking to take on new technical challenges in an innovative team.",
-            'years_of_experience': 5,
-            'has_vehicle': True,
-            'region': "San Francisco, CA",
-            'linkedin_url': "https://www.linkedin.com/in/johnsmith",
-            'github_url': "https://github.com/johnsmith",
-            'github_username': "johnsmith"
-        }
-    }
-
-    for lang, info in personal_info.items():
+    for lang, info in data['personal_info'].items():
         PersonalInfo.objects.create(**info, language=lang)
 
     # Education
-    education_data = [
-        {
-            'fr': {
-                'institution': "École Polytechnique",
-                'degree': "Diplôme d'ingénieur",
-                'field_of_study': "Informatique et Sciences des Données",
-                'description': "Formation d'élite en ingénierie avec spécialisation en informatique et analyse de données."
-            },
-            'en': {
-                'institution': "Stanford University",
-                'degree': "Master of Science",
-                'field_of_study': "Computer Science and Data Science",
-                'description': "Elite engineering program with a focus on computer science and data analysis."
-            },
-            'start_date': timezone.now().date() - timedelta(days=2190),
-            'end_date': timezone.now().date() - timedelta(days=1095)
-        },
-        # ... (ajoutez d'autres formations si nécessaire)
-    ]
-
-    for edu in education_data:
-        for lang, data in edu.items():
-            if lang in ['fr', 'en']:
-                Education.objects.create(**data, start_date=edu['start_date'], end_date=edu['end_date'], language=lang)
+    for edu in data['education']:
+        for lang in ['fr', 'en']:
+            if lang in edu:
+                Education.objects.create(
+                    institution=edu[lang]['institution'],
+                    degree=edu[lang].get('degree', ''),
+                    field_of_study=edu[lang]['field_of_study'],
+                    description=edu[lang]['description'],
+                    start_date=datetime.strptime(edu['start_date'], "%Y-%m-%d").date(),
+                    end_date=datetime.strptime(edu['end_date'], "%Y-%m-%d").date() if edu['end_date'] else None,
+                    location=edu.get('location', ''),
+                    language=lang
+                )
 
     # WorkExperience
-    work_experience_data = [
-        {
-            'fr': {
-                'company': "TechInnovate Solutions",
-                'position': "Développeur Full Stack Senior",
-                'description': "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux."
-            },
-            'en': {
-                'company': "TechInnovate Solutions",
-                'position': "Senior Full Stack Developer",
-                'description': "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients."
-            },
-            'start_date': timezone.now().date() - timedelta(days=730),
-            'end_date': None
-        },
-        # ... (ajoutez d'autres expériences professionnelles si nécessaire)
-    ]
-
-    for exp in work_experience_data:
-        for lang, data in exp.items():
-            if lang in ['fr', 'en']:
-                WorkExperience.objects.create(**data, start_date=exp['start_date'], end_date=exp['end_date'], language=lang)
+    for exp in data['work_experience']:
+        for lang in ['fr', 'en']:
+            if lang in exp:
+                WorkExperience.objects.create(
+                    company=exp[lang]['company'],
+                    position=exp[lang]['position'],
+                    description=exp[lang]['description'],
+                    start_date=datetime.strptime(exp['start_date'], "%Y-%m-%d").date(),
+                    end_date=datetime.strptime(exp['end_date'], "%Y-%m-%d").date() if exp['end_date'] else None,
+                    location=exp.get('location', ''),
+                    language=lang
+                )
 
     # Skills
-    hard_skills = ["Python", "Django", "Flask", "JavaScript", "React", "Node.js", "Docker", "Kubernetes", "AWS", "Git", "SQL", "MongoDB", "Machine Learning", "Data Analysis", "RESTful APIs"]
-    soft_skills = ["Résolution de problèmes complexes", "Travail d'équipe", "Communication technique", "Gestion de projet", "Apprentissage rapide"]
-
-    for skill in hard_skills:
-        Skill.objects.create(name=skill, type='hard')
-    for skill in soft_skills:
-        Skill.objects.create(name=skill, type='soft')
+    for skill_type, skills in data['skills'].items():
+        for skill in skills:
+            Skill.objects.create(name=skill, type=skill_type.rstrip('_skills'))
 
     # Languages
-    languages = [
-        {'name': "Anglais", 'level': "Courant (TOEIC 950)"},
-        {'name': "Espagnol", 'level': "Intermédiaire"},
-        {'name': "Français", 'level': "Langue maternelle"}
-    ]
-    for lang in languages:
+    for lang in data['languages']:
         Language.objects.create(**lang)
 
     # Hobbies
-    hobbies = ["Photographie", "Randonnée", "Programmation open-source", "Lecture de science-fiction"]
-    for hobby in hobbies:
+    for hobby in data.get('hobbies', []):
         Hobby.objects.create(name=hobby)
 
     # Projects
-    projects_data = [
-        {
-            'fr': {
-                'title': "Plateforme d'Analyse Prédictive pour E-commerce",
-                'short_description': "Solution d'analyse pour optimiser les stocks et les ventes",
-                'long_description': "Développement d'une solution d'analyse prédictive pour optimiser les stocks et les ventes d'une plateforme e-commerce. Utilisation de Python, scikit-learn et Django pour le backend, et React pour le frontend.",
-                'github_url': "https://github.com/jeandupont/ecommerce-predictor",
-                'live_url': "https://ecommerce-predictor.example.com"
-            },
-            'en': {
-                'title': "E-commerce Predictive Analysis Platform",
-                'short_description': "Analytics solution to optimize inventory and sales",
-                'long_description': "Development of a predictive analytics solution to optimize inventory and sales for an e-commerce platform. Using Python, scikit-learn, and Django for the backend, and React for the frontend.",
-                'github_url': "https://github.com/johnsmith/ecommerce-predictor",
-                'live_url': "https://ecommerce-predictor.example.com"
-            }
-        },
-        # ... (ajoutez d'autres projets si nécessaire)
-    ]
-
-    for project in projects_data:
-        for lang, data in project.items():
-            if lang in ['fr', 'en']:
-                proj = Project.objects.create(**data, language=lang)
-                proj.technologies.set(Skill.objects.filter(name__in=["Python", "Django", "React", "Machine Learning"]))
+    for proj in data['projects']:
+        for lang in ['fr', 'en']:
+            if lang in proj:
+                project = Project.objects.create(
+                    title=proj[lang]['title'],
+                    short_description=proj[lang]['short_description'],
+                    long_description=proj[lang]['long_description'],
+                    github_url=proj[lang]['github_url'],
+                    live_url=proj[lang].get('live_url'),
+                    language=lang
+                )
+                project.technologies.set(Skill.objects.filter(name__in=proj['technologies']))
 
     # Certifications
-    certifications_data = [
-        {
-            'fr': {
-                'name': "AWS Certified Solutions Architect",
-                'issuing_organization': "Amazon Web Services",
-                'description': "Certification professionnelle validant l'expertise en conception d'architectures cloud sur AWS."
-            },
-            'en': {
-                'name': "AWS Certified Solutions Architect",
-                'issuing_organization': "Amazon Web Services",
-                'description': "Professional certification validating expertise in designing cloud architectures on AWS."
-            },
-            'issue_date': timezone.now().date() - timedelta(days=365),
-            'expiration_date': timezone.now().date() + timedelta(days=730),
-            'credential_id': "AWS-CSA-123456",
-            'credential_url': "https://www.youracclaim.com/badges/aws-certified-solutions-architect"
-        },
-        # ... (ajoutez d'autres certifications si nécessaire)
-    ]
+    for cert in data.get('certifications', []):
+        for lang in ['fr', 'en']:
+            if lang in cert:
+                Certification.objects.create(
+                    name=cert[lang]['name'],
+                    issuing_organization=cert[lang]['issuing_organization'],
+                    description=cert[lang]['description'],
+                    issue_date=datetime.strptime(cert['issue_date'], "%Y-%m-%d").date(),
+                    expiration_date=datetime.strptime(cert['expiration_date'], "%Y-%m-%d").date() if cert['expiration_date'] else None,
+                    credential_id=cert.get('credential_id', ''),
+                    credential_url=cert.get('credential_url', ''),
+                    language=lang
+                )
 
-    for cert in certifications_data:
-        for lang, data in cert.items():
-            if lang in ['fr', 'en']:
-                Certification.objects.create(**data, issue_date=cert['issue_date'], expiration_date=cert['expiration_date'], credential_id=cert['credential_id'], credential_url=cert['credential_url'], language=lang)
-
-    print("Base de données peuplée avec succès avec des données réalistes en français et en anglais!")
+    print("Base de données peuplée avec succès!")
 
 if __name__ == '__main__':
     populate_db()

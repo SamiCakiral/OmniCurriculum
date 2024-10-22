@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from google.oauth2 import service_account
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 load_dotenv(BASE_DIR / '.env')
@@ -87,7 +87,8 @@ WSGI_APPLICATION = "cv_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if os.getenv('GAE_APPLICATION', None):
+if os.getenv('GAE_APPLICATION'):
+    # Running on production App Engine, so connect to Google Cloud SQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -97,16 +98,8 @@ if os.getenv('GAE_APPLICATION', None):
             'HOST': f'/cloudsql/{os.getenv("CLOUDSQL_CONNECTION_NAME")}',
         }
     }
-    
-    # Si vous décidez d'utiliser GCS plus tard
-    # GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
-    # STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
-    # STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    )
 else:
-    # Configuration pour le développement local
+    # Running locally, so use SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -137,9 +130,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = os.getenv('LANGUAGE_CODE', 'fr-fr')
+LANGUAGE_CODE = "fr-fr"
 
-TIME_ZONE = os.getenv('TIME_ZONE', 'Europe/Paris')
+TIME_ZONE = "Europe/Paris"
 
 USE_I18N = True
 
@@ -147,9 +140,7 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-if os.getenv('GAE_APPLICATION', None):
+"""if os.getenv('GAE_APPLICATION'):
     # Use Google Cloud Storage for static files in production
     GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
     STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
@@ -162,14 +153,15 @@ if os.getenv('GAE_APPLICATION', None):
         os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     )
 else:
-    STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    # Use local static files for development"""
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = False  # Set to False in production
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
 # Security settings for production
@@ -180,3 +172,8 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -14,7 +14,7 @@ router.register(r'hobbies', HobbyViewSet)
 router.register(r'certifications', CertificationViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    
     path('api/', include(router.urls)),
     path('cv/', cv_view, name='cv_view'),
     path('api/cv-html/', cv_api, name='cv_api'),
