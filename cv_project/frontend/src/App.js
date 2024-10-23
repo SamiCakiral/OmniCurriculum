@@ -1,9 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VSCodeTheme from './components/VSCodeTheme';
+import { detectLanguage } from './utils/languageDetection';
 
 function App() {
-  const [language, setLanguage] = useState('fr'); // 'fr' comme valeur par défaut
+  const [language, setLanguage] = useState('en'); // Anglais par défaut
+  const [languageLoaded, setLanguageLoaded] = useState(false);
   const [theme, setTheme] = useState('dark'); // 'dark' comme thème par défaut
+
+  useEffect(() => {
+    const detectedLanguage = detectLanguage();
+    setLanguage(detectedLanguage);
+    setLanguageLoaded(true);
+  }, []);
+
+  if (!languageLoaded) {
+    return <div>Chargement...</div>; // ou un composant de chargement
+  }
 
   return (
     <div className="App">

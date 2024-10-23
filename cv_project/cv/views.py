@@ -33,7 +33,7 @@ class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
 
-class HobbyViewSet(viewsets.ReadOnlyModelViewSet):
+class HobbyViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Hobby.objects.all()
     serializer_class = HobbySerializer
 
@@ -53,6 +53,10 @@ def cv_view(request):
         'work_experience': WorkExperience.objects.all(),
         'skills': Skill.objects.all(),
         'projects': Project.objects.all(),
+        'hobbies': Hobby.objects.all(),
+        'certifications': Certification.objects.all(),
+        'language': Language.objects.all(),
+
     }
     return render(request, 'cv/cv_template.html', context)
 
@@ -63,6 +67,9 @@ def cv_api(request):
         'work_experience': WorkExperience.objects.all(),
         'skills': Skill.objects.all(),
         'projects': Project.objects.all(),
+        'hobbies': Hobby.objects.all(),
+        'certifications': Certification.objects.all(),
+        'language': Language.objects.all(),
     }
     html = render_to_string('cv/cv_template.html', context)
     return HttpResponse(html)

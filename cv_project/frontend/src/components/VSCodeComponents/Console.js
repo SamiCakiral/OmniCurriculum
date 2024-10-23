@@ -14,6 +14,31 @@ const Console = ({ language, cvStructure }) => {
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
+  const translations = {
+    fr: {
+      loading: "Chargement du terminal...",
+      connectionError: "Impossible de se connecter au serveur CV.",
+      terminal: "Terminal",
+      welcomeMessage: "Bienvenue ! Je suis {name}, votre assistant virtuel propulsé par Mistral AI 7B. Comment puis-je vous aider aujourd'hui ? (tapez 'exit' pour quitter)",
+      // ... autres traductions
+    },
+    en: {
+      loading: "Loading terminal...",
+      connectionError: "Unable to connect to CV server.",
+      terminal: "Terminal",
+      welcomeMessage: "Welcome! I'm {name}, your virtual assistant powered by Mistral AI 7B. How can I help you today? (type 'exit' to quit)",
+      // ... autres traductions
+    }
+  };
+
+  const t = (key, params = {}) => {
+    let translation = translations[language][key] || key;
+    Object.keys(params).forEach(param => {
+      translation = translation.replace(`{${param}}`, params[param]);
+    });
+    return translation;
+  };
+
   useEffect(() => {
     const fetchPersonalInfo = async () => {
       setIsLoading(true);
@@ -27,14 +52,14 @@ const Console = ({ language, cvStructure }) => {
             { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % cat personalInfo.json`, status: 'success' },
             { type: 'output', content: JSON.stringify(response.data[0], null, 2) },
             { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMe.py`, status: 'success' },
-            { type: 'output', content: `Bienvenue ! Je suis ${response.data[0].name}, votre assistant virtuel propulsé par Mistral AI 7B. Comment puis-je vous aider aujourd'hui ? (tapez 'exit' pour quitter)` }
+            { type: 'output', content: t('welcomeMessage', { name: response.data[0].name }) }
           ]);
           setIsTalkWithMeRunning(true);
         }
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching personal info:', error);
-        setError('Erreur lors du chargement des informations personnelles.');
+        setError(t('connectionError'));
         setIsLoading(false);
       }
     };
@@ -195,14 +220,14 @@ const Console = ({ language, cvStructure }) => {
     }
   }, []);
 
-  if (isLoading) return <div className="h-full bg-[var(--bg-primary)] text-[var(--accent-color)] p-4">Chargement du terminal...</div>;
+  if (isLoading) return <div className="h-full bg-[var(--bg-primary)] text-[var(--accent-color)] p-4">{t('loading')}</div>;
   if (error) return <div className="h-full bg-[var(--bg-primary)] text-red-500 p-4">{error}</div>;
-  if (!personalInfo) return <div className="h-full bg-[var(--bg-primary)] text-yellow-500 p-4">Impossible de se connecter au serveur CV.</div>;
+  if (!personalInfo) return <div className="h-full bg-[var(--bg-primary)] text-yellow-500 p-4">{t('connectionError')}</div>;
 
   return (
     <div className="h-full bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col">
       <div className="bg-[var(--bg-secondary)] px-4 py-2 text-xs font-bold uppercase tracking-wide flex justify-between items-center">
-        <span>Terminal</span>
+        <span>{t('terminal')}</span>
         <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">_</button>
       </div>
       <div 

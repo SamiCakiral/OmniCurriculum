@@ -1,5 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+
+const translations = {
+  fr: {
+    loading: "Chargement de la chronologie...",
+    error: "Erreur lors du chargement des données. Veuillez réessayer.",
+    timeline: "Chronologie",
+    present: "Présent",
+  },
+  en: {
+    loading: "Loading timeline...",
+    error: "Error loading data. Please try again.",
+    timeline: "Timeline",
+    present: "Present",
+  }
+};
 
 const Chronologie = ({ language, addActiveFile }) => {
   const [chronologieItems, setChronologieItems] = useState([]);
@@ -63,12 +78,14 @@ const Chronologie = ({ language, addActiveFile }) => {
     }
   };
 
-  if (isLoading) return <div className="p-4">Chargement de la chronologie...</div>;
+  const t = useCallback((key) => translations[language][key] || key, [language]);
+
+  if (isLoading) return <div className="p-4">{t('loading')}</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
     <div className="w-full h-full bg-[var(--bg-secondary)] text-[var(--text-primary)] flex flex-col overflow-hidden">
-      <div className="p-2 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">Chronologie</div>
+      <div className="p-2 text-xs font-bold uppercase tracking-wide text-[var(--text-secondary)]">{t('timeline')}</div>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col space-y-4">
           {chronologieItems.map((item, index) => (
@@ -80,7 +97,7 @@ const Chronologie = ({ language, addActiveFile }) => {
                 <div className="text-xs">{item.subtitle}</div>
                 <div className="text-xs text-gray-500">
                   {new Date(item.startDate).toLocaleDateString()} - 
-                  {item.endDate ? new Date(item.endDate).toLocaleDateString() : 'Présent'}
+                  {item.endDate ? new Date(item.endDate).toLocaleDateString() : t('present')}
                 </div>
                 <div className="text-xs mt-1">{item.description}</div>
               </div>

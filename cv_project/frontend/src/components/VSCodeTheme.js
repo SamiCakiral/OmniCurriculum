@@ -26,10 +26,26 @@ const VSCodeTheme = ({ language, setLanguage }) => {
   const resizerRef = useRef(null);
 
   const addActiveFile = (file) => {
-    if (!activeFiles.some(f => f.name === file.name)) {
-      setActiveFiles([...activeFiles, file]);
-    }
+    setActiveFiles(prevFiles => {
+      const existingFileIndex = prevFiles.findIndex(f => f.name === file.name && f.section === file.section);
+      if (existingFileIndex !== -1) {
+        // Remplacer le fichier existant
+        const newFiles = [...prevFiles];
+        newFiles[existingFileIndex] = file;
+        return newFiles;
+      } else {
+        // Ajouter le nouveau fichier
+        return [...prevFiles, file];
+      }
+    });
   };
+
+  useEffect(() => {
+    console.log("Active files changed:");
+    activeFiles.forEach(file => {
+      console.log(`File: ${file.name}, Section: ${file.section}, Content: ${file.content ? 'Present' : 'Missing'}`);
+    });
+  }, [activeFiles]);
 
   const removeActiveFile = (fileName) => {
     setActiveFiles(activeFiles.filter(f => f.name !== fileName));
@@ -150,17 +166,19 @@ const VSCodeTheme = ({ language, setLanguage }) => {
               <div className="vscode-editor" style={{ height: `calc(100% - ${showConsole ? consoleHeight : 0}px)` }}>
                 <Editor 
                   activeFiles={activeFiles} 
+                  addActiveFile={addActiveFile}
                   removeFile={removeActiveFile}
                   showSettings={showSettings}
                   settingsContent={
                     <Settings 
                       currentTheme={theme} 
                       setTheme={setTheme}
-                      currentLanguage={language}
+                      language={language}
                       setLanguage={setLanguage}
                     />
                   }
                   language={language}
+                  theme={theme}
                 />
               </div>
               {showConsole && (

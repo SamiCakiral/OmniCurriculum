@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { FolderIcon, DocumentTextIcon } from '@heroicons/react/solid';
 
@@ -7,6 +7,7 @@ const Explorer = ({ addActiveFile, language }) => {
   const [expandedFolders, setExpandedFolders] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [debugContent, setDebugContent] = useState(null);
 
   const translations = {
     fr: {
@@ -16,6 +17,16 @@ const Explorer = ({ addActiveFile, language }) => {
       Skills: 'Compétences',
       Hobbies: 'Centres d\'intérêt',
       Education: 'Formation',
+      ShortDescription: 'Description courte',
+      LongDescription: 'Description longue',
+      Links: 'Liens',
+      Technologies: 'Technologies',
+      Degree: 'Diplôme',
+      FieldOfStudy: 'Domaine d\'étude',
+      Period: 'Période',
+      Location: 'Lieu',
+      KeySkillsAcquired: 'Compétences clés acquises',
+      ObjectivePurpose: 'Objectif / But',
     },
     en: {
       Projects: 'Projects',
@@ -24,10 +35,20 @@ const Explorer = ({ addActiveFile, language }) => {
       Skills: 'Skills',
       Hobbies: 'Hobbies',
       Education: 'Education',
+      ShortDescription: 'Short Description',
+      LongDescription: 'Long Description',
+      Links: 'Links',
+      Technologies: 'Technologies',
+      Degree: 'Degree',
+      FieldOfStudy: 'Field of Study',
+      Period: 'Period',
+      Location: 'Location',
+      KeySkillsAcquired: 'Key Skills Acquired',
+      ObjectivePurpose: 'Objective / Purpose',
     }
   };
 
-  const t = (key) => translations[language][key] || key;
+  const t = useCallback((key) => translations[language][key] || key, [language]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,62 +62,80 @@ const Explorer = ({ addActiveFile, language }) => {
           axios.get(`http://localhost:8000/api/education/?lang=${language}`)
         ]);
 
-        const projectsData = projects.data.map(proj => ({
-          name: `${proj.title || 'Untitled Project'}.md`,
-          content: `# ${proj.title || 'Untitled Project'}
+        console.log('Raw API data:', { projects, workExperience, skills, hobbies, personalInfo, education });
 
-## Description courte
+        const projectsData = projects.data.map(proj => {
+          let content = `# ${proj.title || 'Untitled Project'}
+
+## ${t('ShortDescription')}
 ${proj.short_description || 'No short description available'}
 
-## Description longue
+`;
+
+          if (proj.github_url || proj.live_url) {
+            content += `## ${t('Links')}\n`;
+            if (proj.github_url) content += `GitHub: ${proj.github_url}\n`;
+            if (proj.live_url) content += `Live: ${proj.live_url}\n`;
+            content += "\n";
+          }
+
+          content += `## ${t('LongDescription')}
 ${proj.long_description || 'No long description available'}
 
-## Technologies
-${proj.technologies ? proj.technologies.join(', ') : 'Not specified'}
+## ${t('Technologies')}
+${proj.technologies ? proj.technologies.map(tech => tech.name).join(', ') : 'Not specified'}
+`;
 
-## Liens
-GitHub: ${proj.github_url || 'N/A'}
-Live: ${proj.live_url || 'N/A'}
-`
-        }));
+          return {
+            name: `${proj.title || 'Untitled Project'}.md`,
+            content: content
+          };
+        });
 
         const workExperienceData = workExperience.data.map(exp => ({
           name: `${exp.position || 'Untitled Position'} - ${exp.company || 'Unnamed Company'}.md`,
           content: `# ${exp.position || 'Untitled Position'} at ${exp.company || 'Unnamed Company'}
 
-## Période
+## ${t('Period')}
 ${exp.start_date || 'Not specified'} - ${exp.end_date || 'Present'}
 
-## Description courte
+## ${t('ShortDescription')}
 ${exp.short_description || 'No short description available'}
 
-## Description longue
+## ${t('LongDescription')}
 ${exp.long_description || 'No long description available'}
 
-## Objectif / But
+## ${t('ObjectivePurpose')}
 ${exp.objectif_but || 'Not specified'}
 
-## Lieu
+## ${t('Location')}
 ${exp.location || 'Not specified'}
+
+## ${t('KeySkillsAcquired')}
+${exp.key_learning ? exp.key_learning.map(skill => skill.name).join(', ') : 'Not specified'}
 `
         }));
 
         const skillsData = {
-          "Hard Skills": skills.data.filter(skill => skill.type === 'hard').map(skill => skill.name),
-          "Soft Skills": skills.data.filter(skill => skill.type === 'soft').map(skill => skill.name)
+          "Programming Languages": skills.data.filter(skill => skill.type === 'programming_languages').map(skill => skill.name),
+          "Hard Skills": skills.data.filter(skill => skill.type === 'hard_skills').map(skill => skill.name),
+          "Soft Skills": skills.data.filter(skill => skill.type === 'soft_skills').map(skill => skill.name)
         };
 
         const hobbiesData = hobbies.data.map(hobby => ({
           name: `${hobby.title || 'Unnamed Hobby'}.md`,
           content: `# ${hobby.title || 'Unnamed Hobby'}
 
-## Description courte
+## ${t('ShortDescription')}
 ${hobby.short_description || 'No short description available'}
 
-## Description longue
+## ${t('LongDescription')}
 ${hobby.long_description || 'No long description available'}
 `
         }));
+
+        // Ajoutez ceci pour vérifier le contenu de hobbiesData
+        console.log('Hobbies data processed:', hobbiesData);
 
         const personalInfoData = personalInfo.data[0] || {};
 
@@ -104,27 +143,27 @@ ${hobby.long_description || 'No long description available'}
           name: `${edu.institution || 'Unnamed Institution'}.md`,
           content: `# ${edu.institution || 'Unnamed Institution'}
 
-## Diplôme
+## ${t('Degree')}
 ${edu.degree || 'Not specified'}
 
-## Domaine d'étude
+## ${t('FieldOfStudy')}
 ${edu.field_of_study || 'Not specified'}
 
-## Description
+## ${t('ShortDescription')}
 ${edu.description || 'No description available'}
 
-## Période
+## ${t('Period')}
 ${edu.start_date || 'Not specified'} - ${edu.end_date || 'Present'}
 
-## Lieu
+## ${t('Location')}
 ${edu.location || 'Not specified'}
 
-## Compétences clés acquises
-${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
+## ${t('KeySkillsAcquired')}
+${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not specified'}
 `
         }));
 
-        setCvStructure({
+        const newCvStructure = {
           [t('Projects')]: projectsData,
           [t('JobsInternships')]: workExperienceData,
           [t('Education')]: educationData,
@@ -139,9 +178,12 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
               content: JSON.stringify(personalInfoData, null, 2)
             }
           }
-        });
+        };
 
-        setExpandedFolders({ [t('Personal')]: true, [`${t('Personal')}/${t('Hobbies')}`]: true });
+        console.log('Processed CV structure:', newCvStructure);
+
+        setCvStructure(newCvStructure);
+        setExpandedFolders({ [t('Personal')]: true });
         setIsLoading(false);
       } catch (error) {
         console.error('Erreur lors du chargement des données du CV:', error);
@@ -151,13 +193,18 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
     };
 
     fetchData();
-  }, [language]);
+  }, [language, t]);
 
-  const toggleFolder = (folder) => {
+  const toggleFolder = useCallback((folder) => {
     setExpandedFolders(prev => ({ ...prev, [folder]: !prev[folder] }));
-  };
+  }, []);
 
-  const renderTree = (tree, path = '') => {
+  const handleFileClick = useCallback((file) => {
+    console.log('File clicked in Explorer:', file);
+    addActiveFile(file);
+  }, [addActiveFile]);
+
+  const renderTree = useCallback((tree, path = '') => {
     return Object.entries(tree).map(([key, value]) => {
       const currentPath = path ? `${path}/${key}` : key;
       if (Array.isArray(value)) {
@@ -174,7 +221,7 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
               <div
                 key={`${currentPath}/${item.name}`}
                 className="flex items-center ml-4 cursor-pointer hover:bg-[var(--hover-bg)] py-1"
-                onClick={() => addActiveFile({ section: currentPath, name: item.name, content: item.content })}
+                onClick={() => handleFileClick({ section: currentPath, name: item.name, content: item.content })}
               >
                 <DocumentTextIcon className="w-4 h-4 mr-2 text-blue-400" />
                 <span>{item.name}</span>
@@ -188,7 +235,7 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
             <div
               key={currentPath}
               className="flex items-center ml-4 cursor-pointer hover:bg-[var(--hover-bg)] py-1"
-              onClick={() => addActiveFile({ section: path, name: value.name, content: value.content })}
+              onClick={() => handleFileClick({ section: path, name: value.name, content: value.content })}
             >
               <DocumentTextIcon className="w-4 h-4 mr-2 text-blue-400" />
               <span>{value.name}</span>
@@ -209,8 +256,9 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
           );
         }
       }
+      return null;
     });
-  };
+  }, [expandedFolders, handleFileClick, toggleFolder]);
 
   if (isLoading) return <div className="p-4">Chargement de l'explorateur...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -221,6 +269,12 @@ ${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
       <div className="flex-1 overflow-y-auto">
         {renderTree(cvStructure)}
       </div>
+      {debugContent && (
+        <div className="p-2 border-t border-gray-700">
+          <h3 className="font-bold">Debug Content:</h3>
+          <pre className="text-xs overflow-auto max-h-40">{debugContent}</pre>
+        </div>
+      )}
     </div>
   );
 };
