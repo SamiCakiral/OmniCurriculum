@@ -15,6 +15,7 @@ const Explorer = ({ addActiveFile, language }) => {
       Personal: 'Personnel',
       Skills: 'Compétences',
       Hobbies: 'Centres d\'intérêt',
+      Education: 'Formation',
     },
     en: {
       Projects: 'Projects',
@@ -22,6 +23,7 @@ const Explorer = ({ addActiveFile, language }) => {
       Personal: 'Personal',
       Skills: 'Skills',
       Hobbies: 'Hobbies',
+      Education: 'Education',
     }
   };
 
@@ -30,29 +32,31 @@ const Explorer = ({ addActiveFile, language }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projects, workExperience, skills, hobbies, personalInfo] = await Promise.all([
+        const [projects, workExperience, skills, hobbies, personalInfo, education] = await Promise.all([
           axios.get(`http://localhost:8000/api/projects/?lang=${language}`),
           axios.get(`http://localhost:8000/api/work-experience/?lang=${language}`),
           axios.get('http://localhost:8000/api/skills/'),
-          axios.get('http://localhost:8000/api/hobbies/'),
-          axios.get(`http://localhost:8000/api/personal-info/?lang=${language}`)
+          axios.get(`http://localhost:8000/api/hobbies/?lang=${language}`),
+          axios.get(`http://localhost:8000/api/personal-info/?lang=${language}`),
+          axios.get(`http://localhost:8000/api/education/?lang=${language}`)
         ]);
 
         const projectsData = projects.data.map(proj => ({
           name: `${proj.title || 'Untitled Project'}.md`,
           content: `# ${proj.title || 'Untitled Project'}
 
-## Description
-${proj.long_description || 'No description available'}
+## Description courte
+${proj.short_description || 'No short description available'}
+
+## Description longue
+${proj.long_description || 'No long description available'}
 
 ## Technologies
-${Array.isArray(proj.technologies) ? proj.technologies.join(', ') : 'Not specified'}
+${proj.technologies ? proj.technologies.join(', ') : 'Not specified'}
 
-## Date
-${proj.start_date || 'Not specified'} - ${proj.end_date || 'Present'}
-
-## Link
-${proj.link || 'N/A'}
+## Liens
+GitHub: ${proj.github_url || 'N/A'}
+Live: ${proj.live_url || 'N/A'}
 `
         }));
 
@@ -60,72 +64,75 @@ ${proj.link || 'N/A'}
           name: `${exp.position || 'Untitled Position'} - ${exp.company || 'Unnamed Company'}.md`,
           content: `# ${exp.position || 'Untitled Position'} at ${exp.company || 'Unnamed Company'}
 
-## Period
+## Période
 ${exp.start_date || 'Not specified'} - ${exp.end_date || 'Present'}
 
-## Description
-${exp.description || 'No description available'}
+## Description courte
+${exp.short_description || 'No short description available'}
 
-## Responsibilities
-${Array.isArray(exp.responsibilities) ? exp.responsibilities.join('\n') : 'Not specified'}
+## Description longue
+${exp.long_description || 'No long description available'}
 
-## Achievements
-${Array.isArray(exp.achievements) ? exp.achievements.join('\n') : 'Not specified'}
+## Objectif / But
+${exp.objectif_but || 'Not specified'}
+
+## Lieu
+${exp.location || 'Not specified'}
 `
         }));
 
         const skillsData = {
-          "Hard Skills": skills.data.filter(skill => skill.type === 'hard').map(skill => `${skill.name}`),
-          "Soft Skills": skills.data.filter(skill => skill.type === 'soft').map(skill => `${skill.name}`)
+          "Hard Skills": skills.data.filter(skill => skill.type === 'hard').map(skill => skill.name),
+          "Soft Skills": skills.data.filter(skill => skill.type === 'soft').map(skill => skill.name)
         };
 
         const hobbiesData = hobbies.data.map(hobby => ({
-          name: `${hobby.name || 'Unnamed Hobby'}.md`,
-          content: `# ${hobby.name || 'Unnamed Hobby'}
+          name: `${hobby.title || 'Unnamed Hobby'}.md`,
+          content: `# ${hobby.title || 'Unnamed Hobby'}
 
-## Description
-${hobby.description || 'No description available'}
+## Description courte
+${hobby.short_description || 'No short description available'}
 
-## Frequency
-${hobby.frequency || 'Not specified'}
-
-## Why I enjoy it
-${hobby.reason || 'Not specified'}
+## Description longue
+${hobby.long_description || 'No long description available'}
 `
         }));
 
         const personalInfoData = personalInfo.data[0] || {};
 
+        const educationData = education.data.map(edu => ({
+          name: `${edu.institution || 'Unnamed Institution'}.md`,
+          content: `# ${edu.institution || 'Unnamed Institution'}
+
+## Diplôme
+${edu.degree || 'Not specified'}
+
+## Domaine d'étude
+${edu.field_of_study || 'Not specified'}
+
+## Description
+${edu.description || 'No description available'}
+
+## Période
+${edu.start_date || 'Not specified'} - ${edu.end_date || 'Present'}
+
+## Lieu
+${edu.location || 'Not specified'}
+
+## Compétences clés acquises
+${edu.key_learning ? edu.key_learning.join(', ') : 'Not specified'}
+`
+        }));
+
         setCvStructure({
           [t('Projects')]: projectsData,
           [t('JobsInternships')]: workExperienceData,
+          [t('Education')]: educationData,
           [t('Personal')]: {
             [t('Hobbies')]: hobbiesData,
             [`${t('Skills')}.json`]: { 
               name: `${t('Skills')}.json`, 
               content: JSON.stringify(skillsData, null, 2) 
-            },
-            'readAboutMe.md': { 
-              name: 'readAboutMe.md', 
-              content: `# About Me
-
-## Summary
-${personalInfoData.summary || 'No summary available'}
-
-## Education
-${personalInfoData.education || 'Not specified'}
-
-## Career Objective
-${personalInfoData.career_objective || 'Not specified'}
-
-## Languages
-${Array.isArray(personalInfoData.languages) ? personalInfoData.languages.join(', ') : 'Not specified'}
-
-## Contact
-Email: ${personalInfoData.email || 'Not specified'}
-Phone: ${personalInfoData.phone || 'Not specified'}
-Location: ${personalInfoData.location || 'Not specified'}
-` 
             },
             'personalInfo.json': {
               name: 'personalInfo.json',

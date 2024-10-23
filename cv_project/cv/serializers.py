@@ -37,8 +37,9 @@ class HobbySerializer(serializers.ModelSerializer):
     class Meta:
         model = Hobby
         fields = '__all__'
-
+        
 class CertificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certification
         fields = '__all__'
+

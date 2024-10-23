@@ -13,7 +13,7 @@ from django.apps import apps
 from django.db import connections
 from django.db.utils import OperationalError
 
-from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
+from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby
 
 def check_database_connection():
     db_conn = connections['default']
@@ -39,17 +39,12 @@ def check_and_create_migrations():
         sys.exit(1)
 
 def load_data():
-    try: # Si vous avez rempli un fichier avec vos infos personnelles, vous trouverez vos données
-        with open('personal_data.json', 'r', encoding='utf-8') as file: 
-            return json.load(file) 
+    try:
+        with open('personal_data.json', 'r', encoding='utf-8') as file:
+            return json.load(file)
     except FileNotFoundError:
-        print("personal_data.json non trouvé, utilisation de fictional_data.json")
-        try: # Sinon vous aurez un fichier avec des données fictives
-            with open('fictional_data.json', 'r', encoding='utf-8') as file:
-                return json.load(file)
-        except FileNotFoundError:
-            print("fictional_data.json non trouvé")
-            sys.exit("Aucun fichier de données trouvé")
+        print("personal_data.json non trouvé")
+        sys.exit("Fichier de données non trouvé")
 
 def populate_db():
     check_database_connection()
@@ -65,11 +60,24 @@ def populate_db():
     Project.objects.all().delete()
     Language.objects.all().delete()
     Hobby.objects.all().delete()
-    Certification.objects.all().delete()
     
     # PersonalInfo
     for lang, info in data['personal_info'].items():
-        PersonalInfo.objects.create(**info, language=lang)
+        PersonalInfo.objects.create(
+            name=info['name'],
+            title=info['title'],
+            email=info['email'],
+            phone=info['phone'],
+            summary=info['summary'],
+            years_of_experience=info['years_of_experience'],
+            has_vehicle=info['has_vehicle'],
+            region=info['region'],
+            linkedin_url=info['linkedin_url'],
+            github_url=info['github_url'],
+            github_username=info['github_username'],
+            portfolio_url=info['portfolio_url'],
+            language=lang
+        )
 
     # Education
     for edu in data['education']:
@@ -77,14 +85,16 @@ def populate_db():
             if lang in edu:
                 Education.objects.create(
                     institution=edu[lang]['institution'],
-                    degree=edu[lang].get('degree', ''),
+                    degree=edu[lang]['degree'],
                     field_of_study=edu[lang]['field_of_study'],
                     description=edu[lang]['description'],
                     start_date=datetime.strptime(edu['start_date'], "%Y-%m-%d").date(),
                     end_date=datetime.strptime(edu['end_date'], "%Y-%m-%d").date() if edu['end_date'] else None,
-                    location=edu.get('location', ''),
+                    location=edu['location'],
                     language=lang
                 )
+                for skill in edu.get('key_learning', []):
+                    Skill.objects.get_or_create(name=skill, type='education')
 
     # WorkExperience
     for exp in data['work_experience']:
@@ -93,25 +103,25 @@ def populate_db():
                 WorkExperience.objects.create(
                     company=exp[lang]['company'],
                     position=exp[lang]['position'],
-                    description=exp[lang]['description'],
+                    short_description=exp[lang]['short_description'],
+                    long_description=exp[lang]['long_description'],
+                    objectif_but=exp[lang]['Objectif_but'],
                     start_date=datetime.strptime(exp['start_date'], "%Y-%m-%d").date(),
                     end_date=datetime.strptime(exp['end_date'], "%Y-%m-%d").date() if exp['end_date'] else None,
-                    location=exp.get('location', ''),
+                    location=exp['location'],
                     language=lang
                 )
+                for skill in exp.get('key_learning', []):
+                    Skill.objects.get_or_create(name=skill, type='work')
 
     # Skills
     for skill_type, skills in data['skills'].items():
         for skill in skills:
-            Skill.objects.create(name=skill, type=skill_type.rstrip('_skills'))
+            Skill.objects.get_or_create(name=skill, type=skill_type)
 
     # Languages
     for lang in data['languages']:
         Language.objects.create(**lang)
-
-    # Hobbies
-    for hobby in data.get('hobbies', []):
-        Hobby.objects.create(name=hobby)
 
     # Projects
     for proj in data['projects']:
@@ -121,24 +131,22 @@ def populate_db():
                     title=proj[lang]['title'],
                     short_description=proj[lang]['short_description'],
                     long_description=proj[lang]['long_description'],
-                    github_url=proj[lang]['github_url'],
+                    github_url=proj[lang].get('github_url'),
                     live_url=proj[lang].get('live_url'),
                     language=lang
                 )
-                project.technologies.set(Skill.objects.filter(name__in=proj['technologies']))
+                for tech in proj.get('technologies', []):
+                    skill, _ = Skill.objects.get_or_create(name=tech, type='technology')
+                    project.technologies.add(skill)
 
-    # Certifications
-    for cert in data.get('certifications', []):
+    # Hobbies
+    for hobby in data['Hobbies']:
         for lang in ['fr', 'en']:
-            if lang in cert:
-                Certification.objects.create(
-                    name=cert[lang]['name'],
-                    issuing_organization=cert[lang]['issuing_organization'],
-                    description=cert[lang]['description'],
-                    issue_date=datetime.strptime(cert['issue_date'], "%Y-%m-%d").date(),
-                    expiration_date=datetime.strptime(cert['expiration_date'], "%Y-%m-%d").date() if cert['expiration_date'] else None,
-                    credential_id=cert.get('credential_id', ''),
-                    credential_url=cert.get('credential_url', ''),
+            if lang in hobby:
+                Hobby.objects.create(
+                    title=hobby[lang]['title'],
+                    short_description=hobby[lang]['short_description'],
+                    long_description=hobby[lang]['long_description'],
                     language=lang
                 )
 
