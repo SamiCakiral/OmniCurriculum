@@ -133,7 +133,7 @@ def cv_view(request):
     context = get_cv_context(lang, theme, request)
     context['print_mode'] = print_mode
     
-    return render(request, 'cv/cv_template.html', context)
+    return render(request, 'cv/cv_template_pdf.html', context)
 
 def cv_api(request):
     lang = request.GET.get('lang', 'fr')

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - {{ personal_info.name }}</title>
+    <style>
+      :root {
+          /* Variables de couleur existantes */
+          {% if theme == 'light' %}
+          --bg-color: #ffffff;
+          --bg-secondary: #f3f3f3;
+          --text-color: #333333;
+          --highlight-color: #007acc;
+          --comment-color: #008000;
+          --function-color: #795E26;
+          --keyword-color: #0000ff;
+          --string-color: #a31515;
+          --number-color: #098658;
+          --class-color: #0000ff;
+          {% else %}
+          --bg-color: #d4d4d4;
+          --bg-secondary: #252526;
+          --text-color: #d4d4d4;
+          --highlight-color: #264f78;
+          --comment-color: #6A9955;
+          --function-color: #DCDCAA;
+          --keyword-color: #569CD6;
+          --string-color: #CE9178;
+          --number-color: #B5CEA8;
+          --class-color: #569CD6;
+          {% endif %}
+            --base-font-size: 13px;
+            --small-font-size: 11px;
+            --title-font-size: 20px;
+            --heading-font-size: 16px;
+      }
+
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          
+      }
+
+      html, body {
+          width: 100%;
+          height: 100%;
+          
+      }
+
+      body {
+          font-family: 'Fira Code', monospace;
+          line-height: 1.4;
+          font-size: var(--base-font-size);
+            color: var(--text-color);
+          background-color: var(--bg-color);
+            min-height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .a4-container {
+          width: 210mm;
+          height: 297mm;
+          margin: auto;
+          display: flex;
+            background-color: var(--bg-color) !important;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+      }
+
+      .sidebar {
+          width: 35%;
+          height: 100%;
+          padding: 1.5rem;
+          background-color: var(--bg-secondary);
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+      }
+
+      .main-content {
+          width: 65%;
+          height: 100%;
+          padding: 1.5rem;
+            overflow-y: auto;
+      }
+
+      .profile-pic {
+          width: 5rem;
+          height: 5rem;
+          border-radius: 50%;
+          object-fit: cover;
+          margin: 0 auto 0.5rem;
+        }
+
+        h1, h2, h3 {
+            color: var(--keyword-color);
+            font-weight: normal;
+      }
+
+      h1 {
+          font-size: var(--title-font-size);
+          margin-bottom: 0.3rem;
+          text-align: center;
+      }
+
+      h2 {
+          font-size: var(--heading-font-size);
+          margin-top: 0.8rem;
+          margin-bottom: 0.4rem;
+      }
+
+      h3 {
+          font-size: var(--base-font-size);
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+      }
+
+      .title {
+          font-size: var(--base-font-size);
+          color: var(--highlight-color);
+          text-align: center;
+          margin-bottom: 0.5rem;
+      }
+
+      .contact-info {
+          font-size: var(--small-font-size);
+          margin-bottom: 0.5rem;
+          text-align: center;
+      }
+
+      .contact-info p {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.3rem;
+          margin-bottom: 0.2rem;
+      }
+
+      .contact-info a {
+          color: var(--text-color);
+          text-decoration: none;
+      }
+
+      .contact-info a:hover {
+          text-decoration: underline;
+      }
+
+      .skills-section {
+            padding-bottom: 0rem;
+          width: 100%;
+      }
+
+      .skill-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.3rem;
+            margin-bottom: 0.3rem;
+      }
+
+      .tag {
+          font-size: var(--small-font-size);
+          padding: 0.1rem 0.3rem;
+          background-color: var(--highlight-color);
+          color: white;
+          border-radius: 2px;
+      }
+
+      .separator {
+          border: none;
+          border-top: 1px solid var(--highlight-color);
+          opacity: 1;
+            margin: 0.1rem 0 0.3rem 0;
+            width: 100%;
+      }
+
+      .code-block {
+          font-size: var(--small-font-size);
+          line-height: 1.3;
+          padding: 0.5rem;
+          margin: 0.5rem 0;
+            background-color: var(--bg-secondary);
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+
+        .tab {
+            display: inline-block;
+            margin-left: 2em;
+        }
+        
+        .tabtab {
+            display: inline-block;
+            margin-left: 4em;
+        }
+
+        .comment { color: var(--comment-color); }
+        .keyword { color: var(--keyword-color); }
+        .string { color: var(--string-color); }
+        .function { color: var(--function-color); }
+        .number { color: var(--number-color); }
+
+      .experience-item, .project-item, .education-item {
+            margin-bottom: 0.8rem;
+        }
+
+        .experience-item p, .project-item p, .education-item p {
+            margin-bottom: 0.2rem;
+      }
+
+      .company, .project-title {
+          color: var(--function-color);
+          font-weight: bold;
+      }
+
+      .date {
+          color: var(--comment-color);
+          font-style: italic;
+      }
+
+      ul {
+          padding-left: 1rem;
+            margin-bottom: 0.5rem;
+      }
+
+      li {
+          font-size: var(--small-font-size);
+          margin-bottom: 0.2rem;
+      }
+
+      .qr-codes-container {
+          margin-top: auto;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.5rem;
+      }
+
+      .qr-code-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+      }
+
+      .qr-code-item img {
+          width: 7.5rem;
+          height:  7.5rem;
+      }
+
+      .qr-code-label {
+          font-size: var(--small-font-size);
+          margin-top: 0.2rem;
+      }
+
+      @media print {
+          @page {
+              size: A4;
+              margin: 0;
+          }
+          
+          html, body {
+              width: 210mm;
+              height: 297mm;
+              margin: 0;
+              padding: 0;
+          }
+          
+          .a4-container {
+              width: 210mm;
+              height: 297mm;
+              margin: 0;
+              padding: 0;
+              box-shadow: none;
+              overflow: hidden;
+          }
+          
+          .sidebar, .main-content {
+              height: 297mm;
+          }
+          
+          /* Supprimez tous les styles qui pourraient ajouter des marges ou du padding */
+          * {
+              margin: 0;
+              padding: 0;
+          }
+          body {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              background-color: var(--bg-color) !important;
+          }
+          .sidebar {
+              background-color: var(--bg-secondary) !important;
+          }
+          /* Ajoutez d'autres éléments si nécessaire */
+      }
+
+      .theme-dark {
+          --bg-color: #1e1e1e;
+          --bg-secondary: #252526;
+          --text-color: #d4d4d4;
+      }
+
+      .theme-light {
+          --bg-color: #ffffff;
+          --bg-secondary: #f3f3f3;
+          --text-color: #333333;
+      }
+  </style>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body class="{% if theme == 'dark' %}theme-dark{% else %}theme-light{% endif %}">
+    <div class="a4-container">
+        <div class="sidebar">
+            {% if personal_info.photo_url %}
+                <img src="{{ personal_info.photo_url }}"  
+                     alt="Photo professionnelle"
+                     class="profile-pic" width="150" height="150">
+            {% else %}
+                <img src="https://thispersondoesnotexist.com/"  
+                     alt="Photo professionnelle générée"
+                     class="profile-pic" width="150" height="150">
+            {% endif %}
+            <h1>{{ personal_info.name }}</h1>
+            <p class="title">{{ personal_info.title }}</p>
+            
+            <div class="contact-info">
+                <p>📧 <a href="mailto:{{ personal_info.email }}">{{ personal_info.email }}</a></p>
+                <p>📞 {{ personal_info.phone }}</p>
+                <p>🚗 {% if personal_info.has_vehicle %}Véhiculé{% else %}Non véhiculé{% endif %}</p>
+                <p>💼 {{ personal_info.years_of_experience }} ans d'expérience</p>
+                {% if personal_info.linkedin_url %}
+                    <p>🔗 <a href="{{ personal_info.linkedin_url }}">LinkedIn ({{ personal_info.linkedin_username }})</a></p>
+                {% endif %}
+                {% if personal_info.github_url %}
+                    <p>🐙 <a href="{{ personal_info.github_url }}">GitHub ({{ personal_info.github_username }})</a></p>
+                {% endif %}
+            </div>
+
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Compétences techniques{% else %}Technical Skills{% endif %}</h2>
+                
+                <h3 class="function">{% if lang == 'fr' %}Langages de programmation{% else %}Programming Languages{% endif %}</h3>
+                <div class="skill-tags">
+                    {% for skill in skills.programming_languages %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+
+                <h3 class="function">{% if lang == 'fr' %}Outils & Frameworks{% else %}Tools & Frameworks{% endif %}</h3>
+                <div class="skill-tags">
+                    {% for skill in skills.hard_skills %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+                
+            </section>
+
+            
+
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Compétences personnelles{% else %}Soft Skills{% endif %}</h2>
+                <div class="skill-tags">
+                    {% for skill in skills.soft_skills %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+               
+            </section>
+            
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Langues{% else %}Languages{% endif %}</h2>
+                <div class="skill-tags">
+                    {% for language in languages %}
+                        <span class="tag">{{ language.name }} - {{ language.level }}</span>
+                    {% endfor %}
+                </div>
+            </section>
+            
+            <section class="skills-section">
+              <h2>{% if lang == 'fr' %}Loisirs{% else %}Hobbies{% endif %}</h2>
+              <div class="skill-tags">
+                {% for hobby in hobbies %}
+                    <span class="tag">{{ hobby.title }}</span>
+                {% endfor %}
+              </div>
+            </section>
+
+            <div class="qr-codes-container">
+                <div class="qr-code-item">
+                    <img src="data:image/png;base64,{{ qr_codes.page }}" alt="Page QR Code">
+                    <span class="qr-code-label">{% if lang == 'fr' %}Portfolio{% else %}Portfolio{% endif %}</span>
+                </div>
+                {% if qr_codes.linkedin %}
+                <div class="qr-code-item">
+                    <img src="data:image/png;base64,{{ qr_codes.linkedin }}" alt="LinkedIn QR Code">
+                    <span class="qr-code-label">LinkedIn</span>
+                </div>
+                {% endif %}
+                
+            </div>
+        </div>
+        <div class="main-content">
+            <h2>// {% if lang == 'fr' %}Profil{% else %}Profile{% endif %}</h2>
+            <p style="text-align: justify; font-size: var(--small-font-size); padding-bottom: 1rem;">{{ personal_info.summary }}</p>
+            <p style="text-align: center;"><strong>{{ personal_info.wanted_position }}</strong></p>
+            
+            <div class="code-block" style="display: none;">
+                <span class="comment"># {% if lang == 'fr' %}Fonction principale de ma carrière de développeur{% else %}Main function of my developer career{% endif %}</span>
+                <span class="keyword">def</span> <span class="function">run_developer</span>():
+                <span class="tab"><span class="keyword">config</span> = {</span>
+                <span class="tabtab"><span class="string">"name"</span>: <span class="string">"{{ personal_info.name }}"</span>,</span>
+                <span class="tabtab"><span class="string">"stack"</span>: [{% for skill in skills.programming_languages %}<span class="string">"{{ skill.name }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}],</span>
+                <span class="tabtab"><span class="string">"experience"</span>: <span class="number">{{ personal_info.years_of_experience }}</span> <span class="comment">#{% if lang == 'fr' %}ans{% else %}years{% endif %}</span></span>
+                <span class="tab">}</span>
+                <span class="tab"><span class="keyword">while</span> passion:</span>
+                <span class="tabtab">code() <span class="keyword">and</span> learn() <span class="keyword">and</span> innovate()</span>
+                <span class="tabtab">config[<span class="string">"experience"</span>] += <span class="number">1</span></span>
+
+                <span>run_developer()</span> <span class="comment"># {% if lang == 'fr' %}Exécution en cours...{% else %}Execution in progress...{% endif %}</span>
+            </div>
+
+            <h2 style="margin-top: 1rem;">// {% if lang == 'fr' %}Expérience Professionnelle{% else %}Professional Experience{% endif %}</h2>
+            {% for experience in work_experience %}
+                <div class="experience-item">
+                    <p><span class="company">{{ experience.company }}</span> - {{ experience.position }}</p>
+                    <p class="date"># {{ experience.start_date }} - {% if lang == 'fr' %}{{ experience.end_date|default:'Présent' }}{% else %}{{ experience.end_date|default:'Now' }}{% endif %}</p>
+                    <ul>
+                        {% for responsibility in experience.responsibilities.all %}
+                            <li>{{ responsibility.description }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+
+            <h2>// {% if lang == 'fr' %}Projets Personnels{% else %}Personal Projects{% endif %}</h2>
+            {% for project in projects %}
+                <div class="project-item">
+                    <p><span class="project-title">{{ project.title }}()</span> <span class="comment"># {{ project.short_description }}</span></p>
+                   
+                </div>
+            {% endfor %}
+
+            <h2>// {% if lang == 'fr' %}Formation{% else %}Education{% endif %}</h2>
+            {% for edu in education %}
+                <div class="education-item">
+                    <p><strong>{{ edu.institution }}</strong> {% if edu.degree %} - {{ edu.degree }}{% endif %}</p>
+                    <p class="date">{{ edu.start_date }} - {{ edu.end_date|default:'Présent' }}</p>
+                    <p>{{ edu.short_description }}</p>
+                </div>
+            {% endfor %}
+
+            
+        </div>
+    </div>
+
+    <script>
+    function scaleCV() {
+        if (window.matchMedia('print').matches) {
+            return; // Ne pas redimensionner pour l'impression
+        }
+        const container = document.querySelector('.a4-container');
+        const scaleX = window.innerWidth / container.offsetWidth;
+        const scaleY = window.innerHeight / container.offsetHeight;
+        const scale = Math.min(scaleX, scaleY, 1);
+        container.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('load', scaleCV);
+    window.addEventListener('resize', scaleCV);
+    window.matchMedia('print').addListener(function(mql) {
+        if (mql.matches) {
+            document.querySelector('.a4-container').style.transform = 'none';
+        } else {
+            scaleCV();
+        }
+    });
+
+    function applyTheme() {
+        document.body.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+        document.querySelector('.a4-container').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+        document.querySelector('.sidebar').style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary');
+    }
+
+    window.addEventListener('load', applyTheme);
+    window.addEventListener('pageshow', applyTheme);
+
+    function translateMonths(lang) {
+        const monthsFr = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+        const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        const translationDict = lang === 'fr' 
+            ? Object.fromEntries(monthsEn.map((month, i) => [month, monthsFr[i]]))
+            : Object.fromEntries(monthsFr.map((month, i) => [month, monthsEn[i]]));
+        
+        const pattern = new RegExp('\\b(' + monthsFr.concat(monthsEn).join('|') + ')\\b', 'gi');
+        
+        document.body.innerHTML = document.body.innerHTML.replace(pattern, match => 
+            translationDict[match.toLowerCase()] || match
+        );
+    }
+
+    
+    if ({{ lang }} !== 'fr') {
+        translateMonths('en');
+    }
+    </script>
+</body>
+
+</html>

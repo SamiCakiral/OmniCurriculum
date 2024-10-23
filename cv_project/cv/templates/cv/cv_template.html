@@ -320,13 +320,13 @@
             <h1>{{ personal_info.name }}</h1>
             <p class="title">{{ personal_info.title }}</p>
           
-            <div class="contact-info">
+            <div class="contact-info ">
                 <p>📧 <a href="mailto:{{ personal_info.email }}">{{ personal_info.email }}</a></p>
                 <p>📞 {{ personal_info.phone }}</p>
                 <p>🚗 {% if personal_info.has_vehicle %}Véhiculé{% else %}Non véhiculé{% endif %}</p>
                 <p>💼 {{ personal_info.years_of_experience }} ans d'expérience</p>
                 {% if personal_info.linkedin_url %}
-                    <p>🔗 <a href="{{ personal_info.linkedin_url }}">LinkedIn</a></p>
+                    <p>🔗 <a href="{{ personal_info.linkedin_url }}">LinkedIn ({{ personal_info.linkedin_username }})</a></p>
                 {% endif %}
                 {% if personal_info.github_url %}
                     <p>🐙 <a href="{{ personal_info.github_url }}">GitHub ({{ personal_info.github_username }})</a></p>
