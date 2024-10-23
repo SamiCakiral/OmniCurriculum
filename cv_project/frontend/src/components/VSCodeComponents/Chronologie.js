@@ -33,7 +33,11 @@ const Chronologie = ({ language, addActiveFile }) => {
             type: 'work',
             relatedProjects: projects.data.filter(proj => proj.work_experience === exp.id)
           }))
-        ].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        ].sort((a, b) => {
+          if (a.endDate === null || a.endDate === 'Présent') return -1;
+          if (b.endDate === null || b.endDate === 'Présent') return 1;
+          return new Date(b.startDate) - new Date(a.startDate);
+        });
 
         setChronologieItems(items);
         setIsLoading(false);
