@@ -11,14 +11,15 @@ class PersonalInfo(models.Model):
     title = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-    photo_url = models.URLField(blank=True)
+    summary = models.TextField()
     years_of_experience = models.IntegerField(null=True, blank=True)
     has_vehicle = models.BooleanField(default=False)
     region = models.CharField(max_length=100)
     linkedin_url = models.URLField(blank=True)
     github_url = models.URLField(blank=True)
     github_username = models.CharField(max_length=50, blank=True)
-    summary = models.TextField()
+    portfolio_url = models.URLField(blank=True)
+    photo_url = models.URLField(blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.language})"
@@ -27,9 +28,12 @@ class Skill(models.Model):
     SKILL_TYPES = (
         ('hard', 'Compétence technique'),
         ('soft', 'Compétence personnelle'),
+        ('education', 'Compétence acquise en formation'),
+        ('work', 'Compétence acquise au travail'),
+        ('technology', 'Technologie'),
     )
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=4, choices=SKILL_TYPES)
+    type = models.CharField(max_length=10, choices=SKILL_TYPES)
 
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
@@ -42,11 +46,17 @@ class Language(models.Model):
         return f"{self.name} - {self.level}"
 
 class Hobby(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    LANGUAGE_CHOICES = [
+        ('fr', 'Français'),
+        ('en', 'English'),
+    ]
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
+    title = models.CharField(max_length=100)
+    short_description = models.TextField()
+    long_description = models.TextField()
 
     def __str__(self):
-        return self.name
+        return f"{self.title} ({self.language})"
 
 class Education(models.Model):
     LANGUAGE_CHOICES = [
@@ -58,8 +68,10 @@ class Education(models.Model):
     degree = models.CharField(max_length=100)
     field_of_study = models.CharField(max_length=100)
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
     description = models.TextField()
+    location = models.CharField(max_length=100)
+    key_learning = models.ManyToManyField(Skill, related_name='education_skills')
 
     def __str__(self):
         return f"{self.degree} - {self.institution} ({self.language})"
@@ -75,15 +87,19 @@ class WorkExperience(models.Model):
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     company = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
+    short_description = models.TextField()
+    long_description = models.TextField()
+    objectif_but = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField()
+    location = models.CharField(max_length=100)
+    key_learning = models.ManyToManyField(Skill, related_name='work_skills')
 
     def __str__(self):
         return f"{self.position} at {self.company} ({self.language})"
 
     def get_formatted_description(self):
-        return markdown(self.description)
+        return markdown(self.long_description)
 
 class Project(models.Model):
     LANGUAGE_CHOICES = [
@@ -92,12 +108,11 @@ class Project(models.Model):
     ]
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     title = models.CharField(max_length=100)
-    short_description = models.CharField(max_length=200)
-    description = models.TextField()  # Gardez ce champ si vous voulez conserver les données existantes
-    long_description = models.TextField()  # Nouveau champ
+    short_description = models.TextField()
+    long_description = models.TextField()
     technologies = models.ManyToManyField(Skill, related_name='projects')
-    github_url = models.URLField(blank=True)
-    live_url = models.URLField(blank=True)  # Renommé de 'url'
+    github_url = models.URLField(blank=True, null=True)
+    live_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} ({self.language})"

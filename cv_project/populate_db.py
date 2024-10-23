@@ -13,7 +13,7 @@ from django.apps import apps
 from django.db import connections
 from django.db.utils import OperationalError
 
-from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby
+from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
 
 def check_database_connection():
     db_conn = connections['default']
@@ -85,7 +85,7 @@ def populate_db():
             if lang in edu:
                 Education.objects.create(
                     institution=edu[lang]['institution'],
-                    degree=edu[lang]['degree'],
+                    degree=edu[lang].get('degree',""),
                     field_of_study=edu[lang]['field_of_study'],
                     description=edu[lang]['description'],
                     start_date=datetime.strptime(edu['start_date'], "%Y-%m-%d").date(),

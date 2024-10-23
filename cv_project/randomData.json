@@ -11,7 +11,8 @@
         "region": "Paris, France",
         "linkedin_url": "https://www.linkedin.com/in/jeandupont",
         "github_url": "https://github.com/jeandupont",
-        "github_username": "jeandupont"
+        "github_username": "jeandupont",
+        "portfolio_url": "https://jeandupont.com"
       },
       "en": {
         "name": "John Smith",
@@ -24,7 +25,8 @@
         "region": "San Francisco, CA",
         "linkedin_url": "https://www.linkedin.com/in/johnsmith",
         "github_url": "https://github.com/johnsmith",
-        "github_username": "johnsmith"
+        "github_username": "johnsmith",
+        "portfolio_url": "https://johnsmith.com"
       }
     },
     "education": [
@@ -41,6 +43,12 @@
           "field_of_study": "Computer Science and Data Science",
           "description": "Elite engineering program with a focus on computer science and data analysis."
         },
+        "key_learning": [
+          "Python",
+          "Data Analysis",
+          "Machine Learning",
+          "Deep Learning"
+        ],
         "start_date": "2015-09-01",
         "end_date": "2018-06-30"
       }
@@ -50,13 +58,18 @@
         "fr": {
           "company": "TechInnovate Solutions",
           "position": "Développeur Full Stack Senior",
-          "description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux."
+          "short_description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux.",
+          "long_description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux.",
+          "Objectif_but": "Développer et maintenir des applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux."
         },
         "en": {
           "company": "TechInnovate Solutions",
           "position": "Senior Full Stack Developer",
-          "description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients."
+          "short_description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients.",
+          "long_description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients.",
+          "Objectif_but": "Develop and maintain complex web applications using Django and React. Technical lead on several key projects for international clients."
         },
+
         "start_date": "2020-01-01",
         "end_date": null
       }
@@ -78,7 +91,26 @@
       {"name": "Français", "level": "Langue maternelle"}
     ],
     "hobbies": [
-      "Photographie", "Randonnée", "Programmation open-source", "Lecture de science-fiction"
+      {
+        "fr": {
+          "name": "Voyages",
+          "description": "J'aime explorer de nouvelles cultures et découvrir de nouvelles destinations."
+        },
+        "en": {
+          "name": "Traveling",
+          "description": "I like to explore new cultures and discover new destinations."
+        }
+      },
+      {
+        "fr": {
+          "name": "Dance",
+          "description": "J'aime danser et découvrir de nouvelles danse."
+        },
+        "en": {
+          "name": "Dance",
+          "description": "I like to dance and discover new dances."
+        }
+      }
     ],
     "projects": [
       {
