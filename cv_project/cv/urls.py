@@ -19,4 +19,5 @@ urlpatterns = [
     path('cv/', cv_view, name='cv_view'),
     path('api/cv-html/', cv_api, name='cv_api'),
     path('api/generate-pdf/', generate_pdf, name='generate_pdf'),
+    
 ]

@@ -76,6 +76,7 @@ def populate_db():
             github_url=info['github_url'],
             github_username=info['github_username'],
             portfolio_url=info['portfolio_url'],
+            photo_url=info["photo_url"],
             language=lang
         )
 

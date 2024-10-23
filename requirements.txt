@@ -3,3 +3,4 @@ python-dotenv
 django-storages[google]
 psycopg2-binary
 gunicorn
+qrcode

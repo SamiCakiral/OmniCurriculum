@@ -9,7 +9,6 @@ const CVPanel = ({ isOpen, onClose }) => {
   const [lang, setLang] = useState('fr'); // Ajout de l'état pour la langue
   const cvRef = useRef(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState('');
 
   useEffect(() => {
     const fetchCVTemplate = async () => {
@@ -24,20 +23,38 @@ const CVPanel = ({ isOpen, onClose }) => {
 
     const fetchCvData = async () => {
       try {
-        const [personalInfo, education, workExperience, skills, projects] = await Promise.all([
+        const [personalInfo, education, workExperience, skills, projects, hobbies] = await Promise.all([
           axios.get(`http://localhost:8000/api/personal-info/?lang=${lang}`),
           axios.get(`http://localhost:8000/api/education/?lang=${lang}`),
           axios.get(`http://localhost:8000/api/work-experience/?lang=${lang}`),
-          axios.get(`http://localhost:8000/api/skills/?lang=${lang}`),
-          axios.get(`http://localhost:8000/api/projects/?lang=${lang}`)
+          axios.get('http://localhost:8000/api/skills/'),
+          axios.get(`http://localhost:8000/api/projects/?lang=${lang}`),
+          axios.get(`http://localhost:8000/api/hobbies/?lang=${lang}`)
         ]);
 
         setCvData({
           personalInfo: personalInfo.data[0],
-          education: education.data,
-          workExperience: workExperience.data,
-          skills: skills.data,
-          projects: projects.data
+          education: education.data.map(edu => ({
+            ...edu,
+            description: edu.short_description || 'Pas de description disponible'
+          })),
+          workExperience: workExperience.data.map(exp => ({
+            ...exp,
+            description: exp.short_description || 'Pas de description disponible'
+          })),
+          skills: {
+            programmingLanguages: skills.data.filter(skill => skill.type === 'programming_languages').map(skill => skill.name),
+            hardSkills: skills.data.filter(skill => skill.type === 'hard_skills').map(skill => skill.name),
+            softSkills: skills.data.filter(skill => skill.type === 'soft_skills').map(skill => skill.name)
+          },
+          projects: projects.data.map(proj => ({
+            ...proj,
+            description: proj.short_description || 'Pas de description disponible'
+          })),
+          hobbies: hobbies.data.map(hobby => ({
+            ...hobby,
+            description: hobby.short_description || 'Pas de description disponible'
+          }))
         });
       } catch (error) {
         console.error('Erreur lors de la récupération des données du CV :', error);
@@ -53,7 +70,7 @@ const CVPanel = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (cvContent && cvData) {
       let updatedContent = cvContent;
-      const { personalInfo, education, workExperience, skills, projects } = cvData;
+      const { personalInfo, education, workExperience, skills, projects, hobbies } = cvData;
 
       // Remplacer les données personnelles
       updatedContent = updatedContent.replace('{{name}}', personalInfo.name);
@@ -63,7 +80,10 @@ const CVPanel = ({ isOpen, onClose }) => {
       updatedContent = updatedContent.replace('{{summary}}', personalInfo.summary);
 
       // Remplacer les compétences
-      const skillsHtml = skills.map(skill => `<span class="tag">${skill.name}</span>`).join('');
+      const skillsHtml = Object.entries(skills).map(([category, skillList]) => `
+        <h3>${category}</h3>
+        ${skillList.map(skill => `<span class="tag">${skill}</span>`).join('')}
+      `).join('');
       updatedContent = updatedContent.replace('{{skills}}', skillsHtml);
 
       // Remplacer l'expérience professionnelle
@@ -88,8 +108,15 @@ const CVPanel = ({ isOpen, onClose }) => {
       // Remplacer la formation
       const educationHtml = education.map(edu => `
         <p><strong>${edu.degree}</strong> - ${edu.institution}, ${edu.end_date}</p>
+        <p>${edu.description}</p>
       `).join('');
       updatedContent = updatedContent.replace('{{education}}', educationHtml);
+
+      // Remplacer les hobbies
+      const hobbiesHtml = hobbies.map(hobby => `
+        <p><strong>${hobby.title}</strong> - ${hobby.description}</p>
+      `).join('');
+      updatedContent = updatedContent.replace('{{hobbies}}', hobbiesHtml);
 
       setCvContent(updatedContent);
     }
@@ -101,39 +128,15 @@ const CVPanel = ({ isOpen, onClose }) => {
 
   const toggleLang = () => {
     setLang(prevLang => prevLang === 'fr' ? 'en' : 'fr');
-    // Réinitialiser l'URL du PDF lorsque la langue change
-    setPdfUrl('');
+    
   };
 
-  useEffect(() => {
-    // Réinitialiser l'URL du PDF lorsque la langue change
-    setPdfUrl('');
-  }, [lang]);
-
-  const handleDownloadPDF = async () => {
-    setIsGeneratingPDF(true);
-    const newPdfUrl = `http://localhost:8000/api/generate-pdf/?lang=${lang}&theme=${theme}`;
+  const handleDownloadPDF = () => {
+    // Créer l'URL avec les paramètres de langue et de thème
+    const url = `http://localhost:8000/cv/?lang=${lang}&theme=${theme}&print=true`;
     
-    if (newPdfUrl !== pdfUrl) {
-      try {
-        const response = await axios.get(newPdfUrl, { responseType: 'blob' });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        setPdfUrl(url);
-      } catch (error) {
-        console.error('Erreur lors de la génération du PDF:', error);
-      }
-    }
-    
-    if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.setAttribute('download', 'cv.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
-    
-    setIsGeneratingPDF(false);
+    // Ouvrir l'URL dans un nouvel onglet
+    window.open(url, '_blank');
   };
 
   if (!isOpen) return null;

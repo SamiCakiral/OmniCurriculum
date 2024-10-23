@@ -16,8 +16,9 @@
             --keyword-color: #0000ff;
             --string-color: #a31515;
             --number-color: #098658;
+            --class-color: #0000ff;
             {% else %}
-            --bg-color: #1e1e1e;
+            --bg-color: #d4d4d4;
             --bg-secondary: #252526;
             --text-color: #d4d4d4;
             --highlight-color: #264f78;
@@ -26,6 +27,7 @@
             --keyword-color: #569CD6;
             --string-color: #CE9178;
             --number-color: #B5CEA8;
+            --class-color: #569CD6;
             {% endif %}
         }
 
@@ -46,14 +48,18 @@
         }
 
         .sidebar {
-            width: 30%;
+            flex: 0 0 30%;
+            max-width: 30%;
             background-color: var(--bg-secondary);
             padding: 2rem;
             color: var(--text-color);
+            display: flex;  /* Ajoutez cette ligne */
+            flex-direction: column;  /* Ajoutez cette ligne */
+            align-items: center;  /* Ajoutez cette ligne */
         }
 
         .main-content {
-            width: 70%;
+            flex: 1;
             padding: 2rem;
             background-color: var(--bg-color);
         }
@@ -71,8 +77,23 @@
         h2 {
             font-size: 1.5rem;
             margin-top: 2rem;
-            border-bottom: 1px solid var(--highlight-color);
             padding-bottom: 0.5rem;
+        }
+        h4 {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+            
+        }
+
+        .separator {
+            border: none;
+            border-top: 1px solid var(--highlight-color);
+            opacity: 1;
+            margin: 0.2rem 0 0.5rem 3rem;
+            width: 100%;  /* Ajoutez cette ligne */
+            ;
         }
 
         .profile-pic {
@@ -82,16 +103,84 @@
             object-fit: cover;
             border: 2px solid var(--highlight-color);
             margin-bottom: 1rem;
+            display: block;  /* Ajoutez cette ligne */
+            margin-left: auto;  /* Ajoutez cette ligne */
+            margin-right: auto;  /* Ajoutez cette ligne */
+        }
+        .tab {
+    display: inline-block;
+    margin-left: 2em;
+        }
+        
+        .tabtab {
+            display: inline-block;
+    margin-left: 4em;
+        }
+        .tabtabtab {
+            display: inline-block;
+            margin-left: 6em;
+        }
+        .title {
+            font-size: 1.2rem;
+            color: var(--highlight-color);
+            margin-bottom: 1rem;
+            white-space: nowrap;
+            text-align: center;
+            text-overflow: ellipsis;
+        }
+
+        .contact-info {
+            font-size: 0.9rem;
+        }
+
+        .contact-info p {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .skills-section {
+            padding-bottom: 1rem;
+            width: 100%;  /* Ajoutez cette ligne */
+        }
+
+        .skills-section h2 {
+            font-size: 1.1rem;
+            color: var(--keyword-color);
+            
+            padding-bottom: 0.3rem;
+            margin-bottom: 0.8rem;
+            padding-right: 1rem;
+            white-space: nowrap;  /* Empêche le retour à la ligne */
+        }
+
+        .skills-section h3 {
+            font-size: 1rem;
+            color: var(--function-color);
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
         }
 
         .tag {
-            display: inline-block;
-            background-color: var(--highlight-color);
-            color: var(--text-color);
+            font-size: 0.8rem;
             padding: 0.2rem 0.5rem;
+            background-color: var(--highlight-color);
+            color: whitesmoke;
             border-radius: 3px;
-            margin: 0.2rem;
-            font-size: 0.9rem;
+        }
+
+        .separator {
+            border: none;
+            border-top: 1px solid var(--highlight-color);
+            opacity:1;
+            margin: 0.2rem 0 0.5rem 0;
         }
 
         .experience-item, .project-item {
@@ -108,10 +197,6 @@
             font-style: italic;
         }
 
-        .contact-info {
-            margin-top: 2rem;
-        }
-
         .contact-info a {
             color: var(--string-color);
             text-decoration: none;
@@ -126,7 +211,10 @@
             padding: 1rem;
             border-radius: 5px;
             font-family: 'Fira Code', monospace;
-            white-space: pre-wrap;
+            white-space: pre-line;
+            padding: 0;
+            padding-left: 1rem;
+            padding-bottom: 1.25rem;
         }
 
         .comment { color: var(--comment-color); }
@@ -155,11 +243,9 @@
             }
 
             .container {
-                display: flex;
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 0;
+                width: 100%;
+                max-height: 297mm; /* Hauteur A4 */
+                overflow: hidden;
             }
 
             .sidebar {
@@ -176,9 +262,45 @@
             h2 { font-size: 14pt; }
             p, li { font-size: 10pt; }
             .tag { font-size: 8pt; }
-            .code-block, script {
-                display: none;
+            .code-block {
+       white-space: pre-wrap;
+       padding-left: 0;
+                text-indent: 0;
             }
+        }
+
+        .qr-codes-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-code-top {
+            margin-bottom: 20px;
+        }
+
+        .qr-code-bottom {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        .qr-code-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .qr-code-item img {
+            width: 100px;  /* Ajustez selon vos besoins */
+            height: 100px;
+            margin-bottom: 5px;
+        }
+
+        .qr-code-label {
+            font-size: 14px;
+            text-align: center;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;700&display=swap" rel="stylesheet">
@@ -186,21 +308,23 @@
 <body>
     <div class="container">
         <div class="sidebar">
-            <img src="/static/images/profile-pic.jpg" 
-                 alt="{% if lang == 'fr' %}Photo professionnelle{% else %}Professional photo{% endif %}"
-                 class="profile-pic" width="150" height="150">
+            {% if personal_info.photo_url %}
+                <img src="{{ personal_info.photo_url }}"  
+                     alt="Photo professionnelle"
+                     class="profile-pic" width="150" height="150">
+            {% else %}
+                <img src="https://thispersondoesnotexist.com/"  
+                     alt="Photo professionnelle générée"
+                     class="profile-pic" width="150" height="150">
+            {% endif %}
             <h1>{{ personal_info.name }}</h1>
-            <p>{{ personal_info.title }}</p>
-            <p>{{ personal_info.region }}</p>
+            <p class="title">{{ personal_info.title }}</p>
+          
             <div class="contact-info">
                 <p>📧 <a href="mailto:{{ personal_info.email }}">{{ personal_info.email }}</a></p>
-                <p>📱 {{ personal_info.phone }}</p>
-                <p>🚗 {% if personal_info.has_vehicle %}
-                    {% if lang == 'fr' %}Véhiculé{% else %}Has vehicle{% endif %}
-                    {% else %}
-                    {% if lang == 'fr' %}Non véhiculé{% else %}No vehicle{% endif %}
-                    {% endif %}</p>
-                <p>💼 {% if lang == 'fr' %}{{ personal_info.years_of_experience }} ans d'expérience{% else %}{{ personal_info.years_of_experience }} years of experience{% endif %}</p>
+                <p>📞 {{ personal_info.phone }}</p>
+                <p>🚗 {% if personal_info.has_vehicle %}Véhiculé{% else %}Non véhiculé{% endif %}</p>
+                <p>💼 {{ personal_info.years_of_experience }} ans d'expérience</p>
                 {% if personal_info.linkedin_url %}
                     <p>🔗 <a href="{{ personal_info.linkedin_url }}">LinkedIn</a></p>
                 {% endif %}
@@ -208,47 +332,105 @@
                     <p>🐙 <a href="{{ personal_info.github_url }}">GitHub ({{ personal_info.github_username }})</a></p>
                 {% endif %}
             </div>
-            <h3>{% if lang == 'fr' %}Compétences techniques{% else %}Technical Skills{% endif %}</h3>
-            {% for skill in hard_skills %}
-                <span class="tag">{{ skill.name }}</span>
-            {% endfor %}
-            <h3>{% if lang == 'fr' %}Compétences personnelles{% else %}Soft Skills{% endif %}</h3>
-            {% for skill in soft_skills %}
-                <span class="tag">{{ skill.name }}</span>
-            {% endfor %}
-            <h3>{% if lang == 'fr' %}Langues{% else %}Languages{% endif %}</h3>
-            {% for language in languages %}
-                <span class="tag">{{ language.name }} - {{ language.level }}</span>
-            {% endfor %}
+
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Compétences techniques{% else %}Technical Skills{% endif %}</h2>
+                
+                <h3>{% if lang == 'fr' %}Langages de programmation{% else %}Programming Languages{% endif %}</h3>
+                <div class="skill-tags">
+                    {% for skill in skills.programming_languages %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+
+                <h3>{% if lang == 'fr' %}Outils & Frameworks{% else %}Tools & Frameworks{% endif %}</h3>
+                <div class="skill-tags">
+                    {% for skill in skills.hard_skills %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+                
+            </section>
+
+            <hr class="separator">
+
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Compétences personnelles{% else %}Soft Skills{% endif %}</h2>
+                <div class="skill-tags">
+                    {% for skill in skills.soft_skills %}
+                        <span class="tag">{{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+               
+            </section>
+            <hr class="separator">
+            <section class="skills-section">
+                <h2>{% if lang == 'fr' %}Langues{% else %}Languages{% endif %}</h2>
+                <div class="skill-tags">
+                    {% for language in languages %}
+                        <span class="tag">{{ language.name }} - {{ language.level }}</span>
+                    {% endfor %}
+                </div>
+            </section>
+            <hr class="separator">
+            <section class="skills-section">
+              <h2>{% if lang == 'fr' %}Loisirs{% else %}Hobbies{% endif %}</h2>
+              <div class="skill-tags">
+                {% for hobby in hobbies %}
+                    <span class="tag">{{ hobby.title }}</span>
+                {% endfor %}
+              </div>
+            </section>
+
+            <div class="qr-codes-container">
+              <div class="qr-code-top">
+                <div class="qr-code-item">
+                  <img src="data:image/png;base64,{{ qr_codes.page }}" alt="Page QR Code">
+                  <span class="qr-code-label">{% if lang == 'fr' %}Portfolio{% else %}Portfolio{% endif %}</span>
+                </div>
+              </div>
+              
+              <div class="qr-code-bottom">
+                {% if qr_codes.linkedin %}
+                <div class="qr-code-item">
+                  <img src="data:image/png;base64,{{ qr_codes.linkedin }}" alt="LinkedIn QR Code">
+                  <span class="qr-code-label">LinkedIn</span>
+                </div>
+                {% endif %}
+                
+                {% if qr_codes.github %}
+                <div class="qr-code-item">
+                  <img src="data:image/png;base64,{{ qr_codes.github }}" alt="GitHub QR Code">
+                  <span class="qr-code-label">GitHub</span>
+                </div>
+                {% endif %}
+              </div>
+            </div>
         </div>
         <div class="main-content">
             <h2>// {% if lang == 'fr' %}Profil{% else %}Profile{% endif %}</h2>
             <p>{{ personal_info.summary }}</p>
-
+            <br>
             <div class="code-block">
-                <span class="comment"># {% if lang == 'fr' %}Fonction principale de ma carrière{% else %}Main function of my career{% endif %}</span>
-                <span class="keyword">def</span> <span class="function">developer_career</span>():
-                    skills = {
-                        <span class="string">'tech_stack'</span>: [{% for skill in hard_skills %}<span class="string">'{{ skill.name }}'</span>{% if not forloop.last %}, {% endif %}{% endfor %}],
-                        <span class="string">'soft_skills'</span>: [{% for skill in soft_skills %}<span class="string">'{{ skill.name }}'</span>{% if not forloop.last %}, {% endif %}{% endfor %}]
-                    }
-                    <span class="keyword">print</span>(<span class="string">f"{{ personal_info.name }} - {{ personal_info.title }} - {% if lang == 'fr' %}Expérience{% else %}Experience{% endif %}: {{ personal_info.years_of_experience }} {% if lang == 'fr' %}ans{% else %}years{% endif %}"</span>)
-                    <span class="keyword">while True</span>:
-                        years_experience += <span class="number">1</span>
-                        <span class="keyword">print</span>(<span class="string">f"\n{% if lang == 'fr' %}Montée en compétence...{% else %}Leveling up...{% endif %}"</span>)
-                        <span class="keyword">if</span> incredible_opportunity(year):
-                            <span class="keyword">print</span>(<span class="string">f"{% if lang == 'fr' %}Relever de nouveaux défis{% else %}Embracing new challenges{% endif %}"</span>)
-                        <span class="keyword">else</span>:
-                            get_new_skills(skills)
+                <span class="comment"># {% if lang == 'fr' %}Fonction principale de ma carrière de développeur{% else %}Main function of my developer career{% endif %}</span>
+                <span class="keyword">def</span> <span class="function">run_developer</span>():
+                <span class="tab"><span class="keyword">config</span> = {</span>
+                <span class="tabtab"><span class="string">"name"</span>: <span class="string">"{{ personal_info.name }}"</span>,</span>
+                <span class="tabtab"><span class="string">"stack"</span>: [{% for skill in skills.programming_languages %}<span class="string">"{{ skill.name }}"</span>{% if not forloop.last %}, {% endif %}{% endfor %}],</span>
+                <span class="tabtab"><span class="string">"experience"</span>: <span class="number">{{ personal_info.years_of_experience }}</span> <span class="comment">#{% if lang == 'fr' %}ans{% else %}years{% endif %}</span></span>
+                <span class="tab">}</span>
+                <span class="tab"><span class="keyword">while</span> passion:</span>
+                <span class="tabtab">code() <span class="keyword">and</span> learn() <span class="keyword">and</span> innovate()</span>
+                <span class="tabtab">config[<span class="string">"experience"</span>] += <span class="number">1</span></span>
 
-                developer_career() <span class="comment"># {% if lang == 'fr' %}Exécution en cours...{% else %}Execution in progress...{% endif %}</span>
+                <span>run_developer()</span> <span class="comment"># {% if lang == 'fr' %}Exécution en cours...{% else %}Execution in progress...{% endif %}</span>
             </div>
 
             <h2>// {% if lang == 'fr' %}Expérience Professionnelle{% else %}Professional Experience{% endif %}</h2>
             {% for experience in work_experience %}
                 <div class="experience-item">
                     <p><span class="company">{{ experience.company }}</span> - {{ experience.position }}</p>
-                    <p class="date">{{ experience.start_date }} - {{ experience.end_date|default:'Présent' }}</p>
+                    <p class="date"># {{ experience.start_date }} - {{ experience.end_date|default:'Présent' }}</p>
                     <ul>
                         {% for responsibility in experience.responsibilities.all %}
                             <li>{{ responsibility.description }}</li>
@@ -260,82 +442,30 @@
             <h2>// {% if lang == 'fr' %}Projets Personnels{% else %}Personal Projects{% endif %}</h2>
             {% for project in projects %}
                 <div class="project-item">
-                    <p><span class="project-title">{{ project.title }}</span> - {{ project.short_description }}</p>
-                    <p>{{ project.long_description }}</p>
+                    <p><span class="project-title">{{ project.title }}()</span> <span class="comment"># {{ project.short_description }}</span></p>
+                   
                 </div>
             {% endfor %}
 
             <h2>// {% if lang == 'fr' %}Formation{% else %}Education{% endif %}</h2>
             {% for edu in education %}
-                <p><strong>{{ edu.degree }}</strong> - {{ edu.institution }}, {{ edu.graduation_year }}</p>
+                <div class="education-item">
+                    <p><strong>{{ edu.institution }}</strong> {% if edu.degree %} - {{ edu.degree }}{% endif %}</p>
+                    <p class="date">{{ edu.start_date }} - {{ edu.end_date|default:'Présent' }}</p>
+                    <p>{{ edu.short_description }}</p>
+                </div>
             {% endfor %}
 
-            {% if certifications %}
-            <h2>// {% if lang == 'fr' %}Certifications{% else %}Certifications{% endif %}</h2>
-            <ul>
-                {% for certification in certifications %}
-                    <li>{{ certification.name }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+            
         </div>
     </div>
 
-    <script>
-      // Ajout d'animations subtiles pour améliorer l'expérience utilisateur
-      document.addEventListener('DOMContentLoaded', () => {
-        const tags = document.querySelectorAll('.tag');
-        tags.forEach(tag => {
-          tag.addEventListener('mouseover', () => {
-            tag.style.transform = 'scale(1.1)';
-            tag.style.transition = 'transform 0.3s ease';
-          });
-          tag.addEventListener('mouseout', () => {
-            tag.style.transform = 'scale(1)';
-          });
-        });
-  
-        // Animation du bloc de code
-        const codeBlock = document.querySelector('.code-block');
-        codeBlock.addEventListener('mouseover', () => {
-          codeBlock.style.boxShadow = '0 0 10px rgba(100, 255, 100, 0.3)';
-          codeBlock.style.transition = 'box-shadow 0.3s ease';
-        });
-        codeBlock.addEventListener('mouseout', () => {
-          codeBlock.style.boxShadow = 'none';
-        });
-      });
-    </script>
+    
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-      // Assurez-vous que le DOM est complètement chargé avant d'exécuter le script
-      document.addEventListener('DOMContentLoaded', function() {
-        // Définissez la fonction generatePDF dans la portée globale
-        window.generatePDF = function() {
-          const { jsPDF } = window.jspdf;
-          const doc = new jsPDF();
-          
-          // Capture le contenu HTML
-          const content = document.querySelector('.container');
-          
-          doc.html(content, {
-            callback: function(doc) {
-              doc.save('mon_cv.pdf');
-            },
-            x: 10,
-            y: 10,
-            width: 190,
-            windowWidth: 800
-          });
-        }
-
-        // Ajoutez le bouton de téléchargement programmatiquement
-        const downloadButton = document.getElementById('download-button');
-        downloadButton.textContent = 'Télécharger le CV en PDF';
-        downloadButton.onclick = window.generatePDF;
-      });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+  
 </body>
 
 </html>
