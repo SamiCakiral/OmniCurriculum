@@ -22,6 +22,8 @@ from rest_framework.decorators import api_view
 import requests
 from .AIAssistant import AIAssistant
 import asyncio
+from asgiref.sync import async_to_sync
+import time
 
 if settings.USE_FIRESTORE:
     from firebase_admin import firestore
@@ -279,32 +281,68 @@ def mistral_interaction(request):
     
     # Obtenir l'instance persistante de l'assistant
     assistant = AIAssistant.get_instance(session_id, language)
-    
+
     def stream_response():
         try:
-            # Préparer les messages
+            # Créer une nouvelle boucle d'événements pour les appels asynchrones
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+            # 1. Première requête pour identifier les tools à utiliser
             system_message = assistant.get_system_message()
             messages = [system_message] + assistant.conversation_history + [{"role": "user", "content": user_input}]
             
-            # Obtenir le stream de Mistral en utilisant le client du singleton
-            stream = assistant.mistral.client.chat.stream(
+            # 2. Le modèle choisit les tools
+            response = assistant.mistral.client.chat.complete(
                 model=assistant.mistral.model,
                 messages=messages,
                 tools=assistant.get_tools(),
-                tool_choice="auto"
+                tool_choice="any"
             )
+
+            # 3. Ajouter la réponse de l'assistant avec le tool call
+            assistant_message = response.choices[0].message
+            messages.append({"role": "assistant", "content": assistant_message.content, "tool_calls": assistant_message.tool_calls})
+
+            time.sleep(1)  # Respecter le rate limit
+
+            # 4. Exécuter les tools et ajouter leurs résultats
+            if assistant_message.tool_calls:
+                yield f"data: {json.dumps({'content': 'Je vérifie les informations...'})}\n\n"
+                
+                for tool_call in assistant_message.tool_calls:
+                    function_name = tool_call.function.name
+                    if hasattr(assistant, function_name):
+                        # Exécuter la fonction de manière synchrone via la boucle d'événements
+                        result = loop.run_until_complete(getattr(assistant, function_name)())
+                        messages.append({
+                            "role": "tool",
+                            "name": function_name,
+                            "content": result,
+                            "tool_call_id": tool_call.id
+                        })
+
+                # Attendre 1 seconde avant la requête finale > free tier limit 1 rps
+                time.sleep(1)
+
+                # Requête finale
+                final_response = assistant.mistral.client.chat.complete(
+                    model=assistant.mistral.model,
+                    messages=messages
+                )
+                
+                content = final_response.choices[0].message.content
+                yield f"data: {json.dumps({'content': content})}\n\n"
+            else:
+                content = response.choices[0].message.content
+                yield f"data: {json.dumps({'content': content})}\n\n"
             
-            current_message = ""
-            # Streamer la réponse chunk par chunk
-            for chunk in stream:
-                if chunk.data.choices[0].delta.content:  
-                    content = chunk.data.choices[0].delta.content
-                    current_message += content
-                    yield f"data: {json.dumps({'content': content})}\n\n"
-            
-            # Sauvegarder dans l'historique une fois terminé
+            # Sauvegarder l'historique
             assistant.append_to_history({"role": "user", "content": user_input})
-            assistant.append_to_history({"role": "assistant", "content": current_message})
+            assistant.append_to_history({"role": "assistant", "content": content})
+
+            # Fermer la boucle d'événements
+            loop.close()
                     
         except Exception as e:
             print(f"Error in stream_response: {e}")
@@ -333,6 +371,9 @@ def initialize_mistral(request):
             "status": "error",
             "message": str(e)
         }, status=500)
+
+
+
 
 
 

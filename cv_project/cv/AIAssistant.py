@@ -144,7 +144,7 @@ class AIAssistant:
             
             if project:
                 project_info = {
-                    'name': project.name,
+                    'name': project.title,
                     'description': project.long_description,
                     'technologies': project.technologies,
                 }
@@ -219,85 +219,17 @@ class AIAssistant:
             return "Une erreur s'est produite lors de la recherche des compétences."
 
     def get_tools(self) -> List[Dict]:
-        """Définit les outils disponibles pour l'IA."""
+        """Définit les outils disponibles pour l'IA selon la doc Mistral."""
         return [
             {
                 "type": "function",
                 "function": {
-                    "name": "get_project_info",
-                    "description": "Obtenir des informations sur un projet spécifique",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "project_name": {
-                                "type": "string",
-                                "description": "Nom du projet à rechercher"
-                            }
-                        },
-                        "required": ["project_name"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_work_experience",
-                    "description": "Obtenir des informations sur une expérience professionnelle",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "company_name": {
-                                "type": "string",
-                                "description": "Nom de l'entreprise à rechercher"
-                            }
-                        },
-                        "required": ["company_name"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_education",
-                    "description": "Obtenir des informations sur une formation",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "school_name": {
-                                "type": "string",
-                                "description": "Nom de l'école à rechercher"
-                            }
-                        },
-                        "required": ["school_name"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_skills",
-                    "description": "Obtenir des compétences par type",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "skill_type": {
-                                "type": "string",
-                                "description": "Type de compétences à rechercher (tech, soft, etc.)",
-                                "enum": ["technical", "soft", "language"]
-                            }
-                        },
-                        "required": ["skill_type"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
                     "name": "list_all_projects",
-                    "description": "Obtenir la liste complète des projets",
+                    "description": "Récupère la liste complète des projets. À utiliser AVANT de parler des projets.",
                     "parameters": {
                         "type": "object",
                         "properties": {},
+                        "required": []
                     }
                 }
             },
@@ -305,10 +237,23 @@ class AIAssistant:
                 "type": "function",
                 "function": {
                     "name": "list_all_experiences",
-                    "description": "Obtenir la liste complète des expériences professionnelles",
+                    "description": "Récupère la liste complète des expériences professionnelles. À utiliser AVANT de parler des expériences.",
                     "parameters": {
                         "type": "object",
                         "properties": {},
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_skills",
+                    "description": "Récupère la liste complète des compétences. À utiliser AVANT de parler des compétences.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
                     }
                 }
             }
@@ -365,33 +310,52 @@ class AIAssistant:
             """
         }
 
-    async def process_message(self, user_input: str):
-        """Traite un message utilisateur et génère une réponse."""
+    async def process_message(self, user_input: str) -> str:
+        """Traite un message avec function calling selon la doc Mistral."""
         try:
             if not self.mistral.client:
-                return "⚠️ Le service de chat n'est pas disponible actuellement."
+                return "⚠️ Service indisponible"
 
-            self.append_to_history({"role": "user", "content": user_input})
+            # Préparer les messages
             system_message = self.get_system_message()
-            messages = [system_message] + self.conversation_history
+            messages = [system_message] + self.conversation_history + [{"role": "user", "content": user_input}]
 
-            # Obtenir la réponse de Mistral
+            # 1. Première requête pour identifier les tools à utiliser
             response = await self.mistral.client.chat.complete(
                 model=self.mistral.model,
                 messages=messages,
                 tools=self.get_tools(),
-                tool_choice="auto"
+                tool_choice="any"  # Force l'utilisation des tools
             )
 
-            # Obtenir le contenu de la réponse
-            assistant_message = response.choices[0].message
-            content = assistant_message.content
+            # 2. Si des tools sont appelés
+            if response.choices[0].message.tool_calls:
+                # Exécuter chaque tool demandé
+                for tool_call in response.choices[0].message.tool_calls:
+                    function_name = tool_call.function.name
+                    if hasattr(self, function_name):
+                        # Exécuter la fonction
+                        result = await getattr(self, function_name)()
+                        # Ajouter le résultat aux messages
+                        messages.append({
+                            "role": "tool",
+                            "name": function_name,
+                            "content": result,
+                            "tool_call_id": tool_call.id
+                        })
+
+                # 3. Obtenir la réponse finale avec les résultats des tools
+                final_response = await self.mistral.client.chat.complete(
+                    model=self.mistral.model,
+                    messages=messages
+                )
+                content = final_response.choices[0].message.content
+            else:
+                content = response.choices[0].message.content
 
             # Sauvegarder dans l'historique
-            self.append_to_history({
-                "role": "assistant",
-                "content": content
-            })
+            self.append_to_history({"role": "user", "content": user_input})
+            self.append_to_history({"role": "assistant", "content": content})
 
             return content
 
@@ -447,25 +411,38 @@ class AIAssistant:
             return [f"Une erreur s'est produite: {str(e)}"]
 
     async def list_all_projects(self) -> str:
-        """Récupère tous les projets disponibles."""
+        """Récupère et mémorise tous les projets."""
         try:
+            # Fonction synchrone pour obtenir les technologies
+            def get_technologies(project):
+                return [tech.name for tech in project.technologies.all()]
+
+            # Récupérer les projets
             projects = await sync_to_async(list)(
                 Project.objects.filter(language=self.language)
             )
+            
             if projects:
+                project_list = []
                 for project in projects:
+                    # Wrapper l'appel aux technologies dans sync_to_async
+                    technologies = await sync_to_async(get_technologies)(project)
                     project_info = {
-                        'name': project.name,
-                        'description': project.description,
-                        'technologies': project.technologies,
+                        'title': project.title,
+                        'short_description': project.short_description,
+                        'long_description': project.long_description,
+                        'github_url': project.github_url,
+                        'live_url': project.live_url,
+                        'technologies': technologies
                     }
-                    if project_info not in self.memory['discovered_projects']:
-                        self.memory['discovered_projects'].append(project_info)
-                return "J'ai récupéré la liste de mes projets!"
-            return "Je n'ai pas de projets à présenter pour le moment."
+                    project_list.append(project_info)
+                
+                self.memory['discovered_projects'] = project_list
+                return json.dumps(project_list, ensure_ascii=False)
+            return "Aucun projet trouvé."
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des projets: {e}")
-            return "Je n'arrive pas à accéder à mes projets pour le moment."
+            return "Erreur lors de la récupération des projets."
 
     async def list_all_experiences(self) -> str:
         """Récupère toutes les expériences professionnelles."""
@@ -474,21 +451,47 @@ class AIAssistant:
                 WorkExperience.objects.filter(language=self.language).order_by('-start_date')
             )
             if experiences:
-                for exp in experiences:
-                    exp_info = {
+                self.memory['discovered_experiences'] = [
+                    {
                         'company': exp.company,
                         'position': exp.position,
-                        'description': exp.description,
+                        'short_description': exp.short_description,
+                        'long_description': exp.long_description,
+                        'objectif_but': exp.objectif_but,
                         'start_date': str(exp.start_date),
                         'end_date': str(exp.end_date) if exp.end_date else "Présent",
+                        'location': exp.location
                     }
-                    if exp_info not in self.memory['discovered_experiences']:
-                        self.memory['discovered_experiences'].append(exp_info)
-                return "J'ai récupéré la liste de mes expériences!"
-            return "Je n'ai pas d'expériences à présenter pour le moment."
+                    for exp in experiences
+                ]
+                return json.dumps(self.memory['discovered_experiences'], ensure_ascii=False)
+            return "Aucune expérience trouvée."
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des expériences: {e}")
-            return "Je n'arrive pas à accéder à mes expériences pour le moment."
+            return "Erreur lors de la récupération des expériences."
+
+    async def get_skills(self) -> str:
+        """Récupère toutes les compétences."""
+        try:
+            skills = await sync_to_async(list)(
+                Skill.objects.all()
+            )
+            if skills:
+                # Organiser les compétences par type
+                skills_by_type = {}
+                for skill in skills:
+                    if skill.type not in skills_by_type:
+                        skills_by_type[skill.type] = []
+                    skills_by_type[skill.type].append(skill.name)
+                
+                self.memory['discovered_skills'] = skills_by_type
+                return json.dumps(skills_by_type, ensure_ascii=False)
+            return "Aucune compétence trouvée."
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des compétences: {e}")
+            return "Erreur lors de la récupération des compétences."
+
+
 
 
 
