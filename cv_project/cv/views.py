@@ -137,35 +137,44 @@ def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
 def get_cv_context(lang='fr', theme='light', request=None):
     if settings.USE_FIRESTORE:
         db = firestore.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_ID'))
-        personal_info_docs = db.collection('personal_info').get()
         
-        #doc id = "en" or "fr"
-        personal_info = next((doc.to_dict() for doc in personal_info_docs if doc.id == lang), None)
+        # Personal Info
+        personal_info_docs = db.collection('personal_info').where('language', '==', lang).limit(1).get()
+        personal_info = next((doc.to_dict() for doc in personal_info_docs), None)
         
-        
+        if not personal_info:
+            logging.error(f"No personal info found for language: {lang}")
+            return None
+
         linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
         github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
         
         page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
-        linkedin_qr = generate_qr_code(personal_info['linkedin_url'], linkedin_logo_path) if personal_info and 'linkedin_url' in personal_info else None
-        github_qr = generate_qr_code(personal_info['github_url'], github_logo_path) if personal_info and 'github_url' in personal_info else None
+        linkedin_qr = generate_qr_code(personal_info.get('linkedin_url'), linkedin_logo_path) if personal_info and 'linkedin_url' in personal_info else None
+        github_qr = generate_qr_code(personal_info.get('github_url'), github_logo_path) if personal_info and 'github_url' in personal_info else None
         
-        education = db.collection('education').where('language', '==', lang).get()
-        work_experience = db.collection('work_experience').where('language', '==', lang).get()
-        skills = db.collection('skills').get()
-        projects = db.collection('project').where('language', '==', lang).get()
-        languages = db.collection('language').where('language', '==', lang).get()
-        hobbies = db.collection('hobby').where('language', '==', lang).get()
-        certifications = db.collection('certification').where('language', '==', lang).get()
+        # Other collections
+        education = [doc.to_dict() for doc in db.collection('education').where('language', '==', lang).get()]
+        work_experience = [doc.to_dict() for doc in db.collection('work_experience').where('language', '==', lang).get()]
+        skills = [doc.to_dict() for doc in db.collection('skills').get()]
+        projects = [doc.to_dict() for doc in db.collection('project').where('language', '==', lang).get()]
+        languages = [doc.to_dict() for doc in db.collection('language').where('language', '==', lang).get()]
+        hobbies = [doc.to_dict() for doc in db.collection('hobby').where('language', '==', lang).get()]
+        certifications = [doc.to_dict() for doc in db.collection('certification').where('language', '==', lang).get()]
         
         skills_data = {
-            'programming_languages': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'programming_languages'],
-            'hard_skills': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'hard_skills'],
-            'soft_skills': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'soft_skills'],
+            'programming_languages': [skill for skill in skills if skill['type'] == 'programming_languages'],
+            'hard_skills': [skill for skill in skills if skill['type'] == 'hard_skills'],
+            'soft_skills': [skill for skill in skills if skill['type'] == 'soft_skills'],
         }
     else:
+        # Le code pour SQLite reste inchangé
         personal_info = PersonalInfo.objects.filter(language=lang).first()
         
+        if not personal_info:
+            logging.error(f"No personal info found for language: {lang}")
+            return None
+
         linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
         github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
         

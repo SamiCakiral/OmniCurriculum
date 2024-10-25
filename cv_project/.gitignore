@@ -16,3 +16,4 @@ personal_data.json
 static2/
 media/
 cv_project/db.sqlite3
+node_modules/

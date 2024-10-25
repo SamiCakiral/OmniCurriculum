@@ -5,7 +5,6 @@ import json
 from django.core.management import execute_from_command_line
 from django.utils import timezone
 from datetime import datetime
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cv_project.settings')
 django.setup()
 
@@ -16,8 +15,18 @@ from django.conf import settings
 
 from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
 
+def clear_firestore():
+    if USE_FIRESTORE:
+        collections = ['personal_info', 'education', 'work_experience', 'skills', 'project', 'language', 'hobby']
+        for collection in collections:
+            docs = db.collection(collection).get()
+            for doc in docs:
+                doc.reference.delete()
+        print("Firestore vidé avec succès!")
+
+
 # Firestore setup
-USE_FIRESTORE = settings.USE_FIRESTORE
+USE_FIRESTORE = os.getenv('USE_FIRESTORE')
 if USE_FIRESTORE:
     import firebase_admin
     from firebase_admin import credentials, firestore
@@ -30,8 +39,9 @@ if USE_FIRESTORE:
             'databaseURL': os.getenv('DATABASE_URL')
         }
         firebase_admin.initialize_app(cred, options=options)
-        db = firestore_client.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_URL'))
-
+        db = firestore_client.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_ID'))
+        clear_firestore()
+        
 def check_database_connection():
     db_conn = connections['default']
     try:
@@ -99,7 +109,8 @@ def populate_db():
             language=lang
         )
         if USE_FIRESTORE:
-            db.collection('personal_info').document(lang).set(info)
+            info['language'] = lang
+            db.collection('personal_info').add(info)
 
     # Education
     for edu in data['education']:
@@ -210,5 +221,7 @@ def populate_db():
     if USE_FIRESTORE:
         print("Firestore également peuplé avec succès!")
 
+
 if __name__ == '__main__':
+    
     populate_db()

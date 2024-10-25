@@ -19,15 +19,15 @@ const Console = ({ language, cvStructure }) => {
       loading: "Chargement du terminal...",
       connectionError: "Impossible de se connecter au serveur CV.",
       terminal: "Terminal",
-      welcomeMessage: "Bienvenue ! Je suis {name}, votre assistant virtuel propulsé par Mistral AI 7B. Comment puis-je vous aider aujourd'hui ? (tapez 'exit' pour quitter)",
-      // ... autres traductions
+      welcomeMessage: "Bienvenue ! Je suis {name}, enfin une version artificielle de moi-même (propulsé par Mistral AI 7B). Posez moi des questions sur moi je serait ravi de répondre ! (tapez 'exit' pour quitter)",
+      
     },
     en: {
       loading: "Loading terminal...",
       connectionError: "Unable to connect to CV server.",
       terminal: "Terminal",
-      welcomeMessage: "Welcome! I'm {name}, your virtual assistant powered by Mistral AI 7B. How can I help you today? (type 'exit' to quit)",
-      // ... autres traductions
+      welcomeMessage: "Welcome! I'm {name}, well I am a virtual version of myself (powered by Mistral AI 7B). Ask me questions about me and I'll be happy to answer! (type 'exit' to quit)",
+      
     }
   };
 
@@ -41,23 +41,19 @@ const Console = ({ language, cvStructure }) => {
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
-      console.log('Fetching personal info...');
-      console.log('API URL:', API_URL);
-      console.log('Language:', language);
+      
       setIsLoading(true);
       try {
         const fullUrl = `${API_URL}/api/personal-info/?lang=${language}`;
-        console.log('Full request URL:', fullUrl);
         const response = await axios.get(fullUrl);
-        console.log('API response:', response.data);
         if (response.data && response.data.length > 0) {
-          console.log('Setting personal info:', response.data[0]);
           setPersonalInfo(response.data[0]);
+          const reorganizedData = reorganizePersonalInfo(response.data[0]);
           setMessages([
             { type: 'command', content: `➜ ~ ssh ${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server`, status: 'success' },
             { type: 'output', content: `Last login: ${new Date().toLocaleString()}` },
-            { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % cat personalInfo.json`, status: 'success' },
-            { type: 'output', content: JSON.stringify(response.data[0], null, 2) },
+            { type: 'command', content: `${reorganizedData.name.toLowerCase().replace(' ', '')}@cv-server ~ % cat personalInfo.json`, status: 'success' },
+            { type: 'output', content: JSON.stringify(reorganizedData, null, 2) },
             { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMe.py`, status: 'success' },
             { type: 'output', content: t('welcomeMessage', { name: response.data[0].name }) }
           ]);
@@ -223,6 +219,26 @@ const Console = ({ language, cvStructure }) => {
         break;
     }
   };
+  function reorganizePersonalInfo(data) {
+    const topInfo = {
+      title: data.title,
+      wanted_position: data.wanted_position,
+      phone: data.phone,
+      name: data.name,
+      summary: data.summary,
+
+    };
+  
+    const bottomInfo = { ...data };
+    delete bottomInfo.name;
+    delete bottomInfo.title;
+    delete bottomInfo.wanted_position;
+    delete bottomInfo.phone;
+    delete bottomInfo.summary;
+    delete bottomInfo.language;
+  
+    return { ...bottomInfo, ...topInfo };
+  }
 
   useEffect(() => {
     if (consoleRef.current) {

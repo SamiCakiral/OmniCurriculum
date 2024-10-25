@@ -27,10 +27,9 @@ const Chronologie = ({ language, addActiveFile }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [education, workExperience, projects] = await Promise.all([
+        const [education, workExperience] = await Promise.all([
           axios.get(`${API_URL}/api/education/?lang=${language}`),
-          axios.get(`${API_URL}/api/work-experience/?lang=${language}`),
-          axios.get(`${API_URL}/api/projects/?lang=${language}`)
+          axios.get(`${API_URL}/api/work-experience/?lang=${language}`)
         ]);
 
         const items = [
@@ -47,17 +46,8 @@ const Chronologie = ({ language, addActiveFile }) => {
             subtitle: exp.company,
             startDate: exp.start_date,
             endDate: exp.end_date,
-            description: exp.description,
-            type: 'work',
-            relatedProjects: projects.data.filter(proj => proj.work_experience === exp.id)
-          })),
-          ...projects.data.map(proj => ({
-            title: proj.title,
-            subtitle: proj.short_description,
-            startDate: proj.start_date,
-            endDate: proj.end_date,
-            description: proj.long_description,
-            type: 'project'
+            description: exp.short_description,
+            type: 'work'
           }))
         ].sort((a, b) => {
           if (a.endDate === null || a.endDate === 'Présent') return -1;
@@ -79,24 +69,8 @@ const Chronologie = ({ language, addActiveFile }) => {
 
   const handleItemClick = useCallback((item) => {
     console.log("Item clicked:", item);  // Ajout d'un log pour le débogage
-    if (item.type === 'project') {
-      addActiveFile({
-        section: 'Projets',
-        name: `${item.title}.md`,
-        content: `# ${item.title}
-
-## Description courte
-${item.subtitle}
-
-## Description longue
-${item.description}
-
-## Période
-${new Date(item.startDate).toLocaleDateString()} - ${item.endDate ? new Date(item.endDate).toLocaleDateString() : t('present')}
-`
-      });
-    }
-  }, [addActiveFile, t]);
+    // Vous pouvez ajouter ici une logique pour gérer le clic sur un élément si nécessaire
+  }, []);
 
   if (isLoading) return <div className="p-4">{t('loading')}</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -113,9 +87,7 @@ ${new Date(item.startDate).toLocaleDateString()} - ${item.endDate ? new Date(ite
               onClick={() => handleItemClick(item)}
             >
               <div className={`w-3 h-3 min-w-[0.75rem] mt-1 rounded-full ${
-                item.type === 'education' ? 'bg-blue-500' : 
-                item.type === 'work' ? 'bg-green-500' : 
-                'bg-yellow-500'
+                item.type === 'education' ? 'bg-blue-500' : 'bg-green-500'
               }`}></div>
               <div className="w-10 h-px bg-gray-600 mx-2 mt-2"></div>
               <div className="flex flex-col">
