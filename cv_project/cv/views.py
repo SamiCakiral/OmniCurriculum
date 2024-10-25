@@ -308,13 +308,16 @@ def mistral_interaction(request):
 
             # 4. Exécuter les tools et ajouter leurs résultats
             if assistant_message.tool_calls:
-                yield f"data: {json.dumps({'content': 'Je vérifie les informations...'})}\n\n"
+                dataContent = json.dumps({'content': 'Je vérifie les informations...\n'})
+                yield f"data: {dataContent}\n\n"
                 
                 for tool_call in assistant_message.tool_calls:
                     function_name = tool_call.function.name
+                    print(f"4. Exécution de la fonction: {function_name}")
                     if hasattr(assistant, function_name):
                         # Exécuter la fonction de manière synchrone via la boucle d'événements
                         result = loop.run_until_complete(getattr(assistant, function_name)())
+                        print(f"5. Résultat obtenu: {result[:100]}...")  # Affiche les 100 premiers caractères
                         messages.append({
                             "role": "tool",
                             "name": function_name,
@@ -325,21 +328,31 @@ def mistral_interaction(request):
                 # Attendre 1 seconde avant la requête finale > free tier limit 1 rps
                 time.sleep(1)
 
-                # Requête finale
-                final_response = assistant.mistral.client.chat.complete(
+                print("6. Démarrage du streaming final...")
+                current_message = ""
+                stream = assistant.mistral.client.chat.stream(
                     model=assistant.mistral.model,
                     messages=messages
                 )
                 
-                content = final_response.choices[0].message.content
-                yield f"data: {json.dumps({'content': content})}\n\n"
+                for chunk in stream:
+                    if chunk.data.choices[0].delta.content:
+                        content = chunk.data.choices[0].delta.content
+                        current_message += content
+                        yield f"data: {json.dumps({'content': content})}\n\n"
+                
+                # Sauvegarder dans l'historique
+                assistant.append_to_history({"role": "user", "content": user_input})
+                assistant.append_to_history({"role": "assistant", "content": current_message})
             else:
-                content = response.choices[0].message.content
-                yield f"data: {json.dumps({'content': content})}\n\n"
-            
-            # Sauvegarder l'historique
-            assistant.append_to_history({"role": "user", "content": user_input})
-            assistant.append_to_history({"role": "assistant", "content": content})
+                # Si pas de tool calls, on stream directement la première réponse
+                content = assistant_message.content
+                for char in content:
+                    yield f"data: {json.dumps({'content': char})}\n\n"
+                    time.sleep(0.01)  # Petit délai pour simuler le streaming
+                
+                assistant.append_to_history({"role": "user", "content": user_input})
+                assistant.append_to_history({"role": "assistant", "content": content})
 
             # Fermer la boucle d'événements
             loop.close()

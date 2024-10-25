@@ -268,18 +268,20 @@ class AIAssistant:
         if self.memory['discovered_skills']:
             discovered_context += f"\nCompétences découvertes : {json.dumps(self.memory['discovered_skills'], indent=2, ensure_ascii=False)}"
 
+        # Construire le contexte de la conversation
+        conversation_context = ""
+        if self.conversation_history:
+            conversation_context = "\nDerniers échanges :\n"
+            for msg in self.conversation_history[-8:]:  # Garder les 3 dernières interactions (6 messages)
+                if msg["role"] == "user":
+                    conversation_context += f"Question : {msg['content']}\n"
+                elif msg["role"] == "assistant":
+                    conversation_context += f"Votre réponse : {msg['content']}\n"
+
         return {
             "role": "system",
             "content": f"""
-            INSTRUCTIONS CRITIQUES :
-            1. VOUS DEVEZ ABSOLUMENT utiliser les fonctions fournies avant de répondre à toute question sur :
-               - Projets → list_all_projects()
-               - Expériences → list_all_experiences()
-               - Compétences → get_skills()
-            2. NE JAMAIS répondre sans avoir d'abord utilisé ces fonctions
-            3. NE JAMAIS inventer d'informations
-            4. Si vous n'avez pas l'information, dites explicitement que vous devez la chercher
-
+            
             Vous êtes {self.memory.get('personal_info', {}).get('name', 'Assistant')}, 
             Vous devez répondre en jouant le rôle de {self.memory.get('personal_info', {}).get('name', 'Assistant')}
             Vous êtes un {self.memory.get('personal_info', {}).get('title', 'Développeur')}, et les personnes qui vont te parler vont être des recruteurs ou des personnes interessées par ton profil.
@@ -294,19 +296,31 @@ class AIAssistant:
             5. Si on vous pose une question sur un projet ou une expérience spécifique, utilisez les fonctions disponibles pour obtenir plus d'informations si nécessaire
             6. Vous ne devez absolument JAMAIS inventer d'informations. Si jamais vous ne savez pas répondre, dîtes le clairement. Si vous ne savez pas, expliquez comment contacter le vrai toi pour plus d'informations.
 
-            Processus de réponse obligatoire :
-            1. Pour TOUTE question sur les projets : COMMENCER par list_all_projects()
-            2. Pour TOUTE question sur les expériences : COMMENCER par list_all_experiences()
-            3. Pour TOUTE question sur les compétences : COMMENCER par get_skills()
-            4. ATTENDRE d'avoir les résultats avant de répondre
-            5. Utiliser UNIQUEMENT les informations présentes dans votre mémoire
 
-            Informations découvertes jusqu'à présent :
-            {discovered_context}
+            RÈGLES :
+            1. Ne vérifie les informations QUE si tu en as besoin pour répondre
+            2. Réponds directement aux questions sans lister tous les projets
+            3. Garde en mémoire le contexte de la conversation
+            4. Sois naturel, comme dans une vraie conversation
+            5. Si tu ne sais pas quelque chose, dis-le simplement
+            
+            UTILISATION DES TOOLS :
+            - list_all_projects() : UNIQUEMENT si on te pose une question sur les projets et si tu sais pas une information
+            - list_all_experiences() : UNIQUEMENT si on te pose une question sur l'expérience si tu connais pas la réponse
+            - get_skills() : UNIQUEMENT si on te pose une question sur les compétences
+            
+            Ne dis pas "Je vérifie les informations" sauf si tu utilises vraiment un tool.
 
+            Si on te demande, ou si tu ne sais pas quelque chose demandé, tu fournis le contact :
+            
             Contact :
             - Email: {self.memory.get('personal_info', {}).get('email')}
             - Téléphone: {self.memory.get('personal_info', {}).get('phone')}
+
+            {conversation_context}
+
+            Informations déjà connues :
+            {discovered_context}
             """
         }
 
