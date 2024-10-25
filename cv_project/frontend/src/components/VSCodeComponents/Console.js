@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../config';
+
 const Console = ({ language, cvStructure }) => {
   const [personalInfo, setPersonalInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -9,10 +10,13 @@ const Console = ({ language, cvStructure }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [currentDirectory, setCurrentDirectory] = useState('~');
   const [isTalkWithMeRunning, setIsTalkWithMeRunning] = useState(false);
+  const [isMistralRunning, setIsMistralRunning] = useState(false);
   const messagesEndRef = useRef(null);
   const consoleRef = useRef(null);
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isMistralInitialized, setIsMistralInitialized] = useState(false);
 
   const translations = {
     fr: {
@@ -54,7 +58,7 @@ const Console = ({ language, cvStructure }) => {
             { type: 'output', content: `Last login: ${new Date().toLocaleString()}` },
             { type: 'command', content: `${reorganizedData.name.toLowerCase().replace(' ', '')}@cv-server ~ % cat personalInfo.json`, status: 'success' },
             { type: 'output', content: JSON.stringify(reorganizedData, null, 2) },
-            { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMe.py`, status: 'success' },
+            { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMistral.py`, status: 'success' },
             { type: 'output', content: t('welcomeMessage', { name: response.data[0].name }) }
           ]);
           setIsTalkWithMeRunning(true);
@@ -77,7 +81,7 @@ const Console = ({ language, cvStructure }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleCommand = (command) => {
+  const handleCommand = async (command) => {
     const parts = command.split(' ');
     const cmd = parts[0];
     const args = parts.slice(1);
@@ -150,12 +154,21 @@ const Console = ({ language, cvStructure }) => {
     }
   };
 
-  const addMessage = (type, content) => {
-    setMessages(prev => [...prev, { type, content }]);
+  const addMessage = (type, content, isUpdate = false) => {
+    setMessages(prev => {
+      if (isUpdate && prev.length > 0) {
+        // Mise à jour du dernier message pour le streaming
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = { type, content };
+        return newMessages;
+      }
+      // Ajout d'un nouveau message
+      return [...prev, { type, content }];
+    });
   };
 
   const handleKeyDown = (e) => {
-    e.preventDefault(); // Empêche le comportement par défaut pour toutes les touches
+    e.preventDefault();
 
     switch (e.key) {
       case 'Enter':
@@ -170,11 +183,7 @@ const Console = ({ language, cvStructure }) => {
             addMessage('command', '> exit');
             addMessage('output', 'Assistant virtuel arrêté.');
           } else {
-            addMessage('command', `> ${inputMessage}`);
-            // Simuler une réponse de l'assistant
-            setTimeout(() => {
-              addMessage('output', `Assistant: ${inputMessage}`);
-            }, 1000);
+            handleMistralInteraction(inputMessage);
           }
         } else {
           addMessage('command', `${personalInfo.name.toLowerCase().replace(' ', '')}@cv-server ${currentDirectory} % ${inputMessage}`);
@@ -219,6 +228,69 @@ const Console = ({ language, cvStructure }) => {
         break;
     }
   };
+
+  const handleMistralInteraction = async (userInput) => {
+    try {
+        // Ajouter le message de l'utilisateur comme message distinct
+        addMessage('user', `> ${userInput}`, false);
+        
+        // Créer un nouveau message vide pour la réponse de l'assistant
+        addMessage('assistant', '', false);
+        let currentMessage = '';
+        
+        const response = await fetch(`${API_URL}/api/mistral/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: userInput,
+                language: language
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.content) {
+                            currentMessage += data.content;
+                            // Mettre à jour uniquement le dernier message (réponse de l'assistant)
+                            setMessages(prev => {
+                                const newMessages = [...prev];
+                                newMessages[newMessages.length - 1] = {
+                                    type: 'assistant',
+                                    content: currentMessage
+                                };
+                                return newMessages;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing SSE data:', e);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Erreur lors de l\'interaction avec Mistral AI:', error);
+        addMessage('error', 'Erreur lors de la communication avec l\'assistant Mistral AI.');
+    }
+  };
+
   function reorganizePersonalInfo(data) {
     const topInfo = {
       title: data.title,

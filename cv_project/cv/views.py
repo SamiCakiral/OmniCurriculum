@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.template.loader import render_to_string, get_template
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from weasyprint import HTML, CSS
@@ -18,6 +18,10 @@ import json
 
 import logging
 
+from rest_framework.decorators import api_view
+import requests
+from .AIAssistant import AIAssistant
+import asyncio
 
 if settings.USE_FIRESTORE:
     from firebase_admin import firestore
@@ -259,3 +263,76 @@ def generate_pdf(request):
 
 def get_api_url(request):
     return JsonResponse({'apiUrl': os.environ.get('REACT_APP_API_URL', 'http://localhost:8000')})
+
+def event_stream(assistant, user_input):
+    response_generator = assistant.process_message(user_input)
+    for chunk in response_generator:
+        yield f"data: {json.dumps({'content': chunk})}\n\n"
+
+@api_view(['POST'])
+def mistral_interaction(request):
+    user_input = request.data.get('prompt')
+    language = request.data.get('language', 'fr')
+    
+    # Utiliser l'ID de session ou créer un ID unique pour l'utilisateur
+    session_id = request.session.session_key or 'default_session'
+    
+    # Obtenir l'instance persistante de l'assistant
+    assistant = AIAssistant.get_instance(session_id, language)
+    
+    def stream_response():
+        try:
+            # Préparer les messages
+            system_message = assistant.get_system_message()
+            messages = [system_message] + assistant.conversation_history + [{"role": "user", "content": user_input}]
+            
+            # Obtenir le stream de Mistral en utilisant le client du singleton
+            stream = assistant.mistral.client.chat.stream(
+                model=assistant.mistral.model,
+                messages=messages,
+                tools=assistant.get_tools(),
+                tool_choice="auto"
+            )
+            
+            current_message = ""
+            # Streamer la réponse chunk par chunk
+            for chunk in stream:
+                if chunk.data.choices[0].delta.content:  
+                    content = chunk.data.choices[0].delta.content
+                    current_message += content
+                    yield f"data: {json.dumps({'content': content})}\n\n"
+            
+            # Sauvegarder dans l'historique une fois terminé
+            assistant.append_to_history({"role": "user", "content": user_input})
+            assistant.append_to_history({"role": "assistant", "content": current_message})
+                    
+        except Exception as e:
+            print(f"Error in stream_response: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingHttpResponse(
+        streaming_content=stream_response(),
+        content_type='text/event-stream'
+    )
+
+@api_view(['GET'])
+def initialize_mistral(request):
+    language = request.query_params.get('language', 'fr')
+    try:
+        assistant = AIAssistant(language)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        initial_context = loop.run_until_complete(assistant.initialize())
+        loop.close()
+        return Response({
+            "status": "success",
+            "context": initial_context
+        })
+    except Exception as e:
+        return Response({
+            "status": "error",
+            "message": str(e)
+        }, status=500)
+
+
+
