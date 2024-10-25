@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './CVPanel.css';
-
+import { API_URL } from '../config';
 const CVPanel = ({ isOpen, onClose }) => {
   const [cvContent, setCvContent] = useState('');
   const [cvData, setCvData] = useState(null);
@@ -13,7 +13,7 @@ const CVPanel = ({ isOpen, onClose }) => {
   useEffect(() => {
     const fetchCVTemplate = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/cv-html/?lang=${lang}&theme=${theme}`);
+        const response = await axios.get(`${API_URL}/api/cv-html/?lang=${lang}&theme=${theme}`);
         setCvContent(response.data);
       } catch (error) {
         console.error('Erreur lors du chargement du template CV:', error);
@@ -24,12 +24,12 @@ const CVPanel = ({ isOpen, onClose }) => {
     const fetchCvData = async () => {
       try {
         const [personalInfo, education, workExperience, skills, projects, hobbies] = await Promise.all([
-          axios.get(`http://localhost:8000/api/personal-info/?lang=${lang}`),
-          axios.get(`http://localhost:8000/api/education/?lang=${lang}`),
-          axios.get(`http://localhost:8000/api/work-experience/?lang=${lang}`),
-          axios.get('http://localhost:8000/api/skills/'),
-          axios.get(`http://localhost:8000/api/projects/?lang=${lang}`),
-          axios.get(`http://localhost:8000/api/hobbies/?lang=${lang}`)
+          axios.get(`${API_URL}/api/personal-info/?lang=${lang}`),
+          axios.get(`${API_URL}/api/education/?lang=${lang}`),
+          axios.get(`${API_URL}/api/work-experience/?lang=${lang}`),
+          axios.get(`${API_URL}/api/skills/`),
+          axios.get(`${API_URL}/api/projects/?lang=${lang}`),
+          axios.get(`${API_URL}/api/hobbies/?lang=${lang}`)
         ]);
 
         setCvData({
@@ -133,8 +133,8 @@ const CVPanel = ({ isOpen, onClose }) => {
 
   const handleDownloadPDF = () => {
     // Créer l'URL avec les paramètres de langue et de thème
-    const url = `http://localhost:8000/cv/?lang=${lang}&theme=${theme}&print=true`;
-    
+    const url = `${API_URL}/cv/?lang=${lang}&theme=${theme}&print=true`;
+      
     // Ouvrir l'URL dans un nouvel onglet
     window.open(url, '_blank');
   };

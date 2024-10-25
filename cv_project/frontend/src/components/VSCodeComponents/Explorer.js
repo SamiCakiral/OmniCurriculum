@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { FolderIcon, DocumentTextIcon } from '@heroicons/react/solid';
+import { API_URL } from '../../config';
 
 const Explorer = ({ addActiveFile, language }) => {
   const [cvStructure, setCvStructure] = useState({});
@@ -54,12 +55,12 @@ const Explorer = ({ addActiveFile, language }) => {
     const fetchData = async () => {
       try {
         const [projects, workExperience, skills, hobbies, personalInfo, education] = await Promise.all([
-          axios.get(`http://localhost:8000/api/projects/?lang=${language}`),
-          axios.get(`http://localhost:8000/api/work-experience/?lang=${language}`),
-          axios.get('http://localhost:8000/api/skills/'),
-          axios.get(`http://localhost:8000/api/hobbies/?lang=${language}`),
-          axios.get(`http://localhost:8000/api/personal-info/?lang=${language}`),
-          axios.get(`http://localhost:8000/api/education/?lang=${language}`)
+          axios.get(`${API_URL}/api/projects/?lang=${language}`), 
+          axios.get(`${API_URL}/api/work-experience/?lang=${language}`),
+          axios.get(`${API_URL}/api/skills/`),
+          axios.get(`${API_URL}/api/hobbies/?lang=${language}`),
+          axios.get(`${API_URL}/api/personal-info/?lang=${language}`),
+          axios.get(`${API_URL}/api/education/?lang=${language}`)
         ]);
 
         console.log('Raw API data:', { projects, workExperience, skills, hobbies, personalInfo, education });
@@ -214,7 +215,7 @@ ${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not
               className="flex items-center cursor-pointer hover:bg-[var(--hover-bg)] py-1"
               onClick={() => toggleFolder(currentPath)}
             >
-              <FolderIcon className="w-4 h-4 mr-2 text-yellow-500" />
+              <FolderIcon className="w-5 h-5 min-w-[1.25rem] mr-2 text-yellow-500" />
               <span>{key}</span>
             </div>
             {expandedFolders[currentPath] && value.map(item => (
@@ -223,7 +224,7 @@ ${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not
                 className="flex items-center ml-4 cursor-pointer hover:bg-[var(--hover-bg)] py-1"
                 onClick={() => handleFileClick({ section: currentPath, name: item.name, content: item.content })}
               >
-                <DocumentTextIcon className="w-4 h-4 mr-2 text-blue-400" />
+                <DocumentTextIcon className="w-5 h-5 min-w-[1.25rem] mr-2 text-blue-400" />
                 <span>{item.name}</span>
               </div>
             ))}
@@ -237,7 +238,7 @@ ${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not
               className="flex items-center ml-4 cursor-pointer hover:bg-[var(--hover-bg)] py-1"
               onClick={() => handleFileClick({ section: path, name: value.name, content: value.content })}
             >
-              <DocumentTextIcon className="w-4 h-4 mr-2 text-blue-400" />
+              <DocumentTextIcon className="w-5 h-5 min-w-[1.25rem] mr-2 text-blue-400" />
               <span>{value.name}</span>
             </div>
           );
@@ -248,7 +249,7 @@ ${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not
                 className="flex items-center cursor-pointer hover:bg-[var(--hover-bg)] py-1"
                 onClick={() => toggleFolder(currentPath)}
               >
-                <FolderIcon className="w-4 h-4 mr-2 text-yellow-500" />
+                <FolderIcon className="w-5 h-5 min-w-[1.25rem] mr-2 text-yellow-500" />
                 <span>{key}</span>
               </div>
               {expandedFolders[currentPath] && renderTree(value, currentPath)}

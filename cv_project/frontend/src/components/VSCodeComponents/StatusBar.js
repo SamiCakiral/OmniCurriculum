@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
 const StatusBar = () => {
   const [skills, setSkills] = useState([]);
@@ -8,7 +9,7 @@ const StatusBar = () => {
   useEffect(() => {
     const fetchSkillsAndLanguages = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/skills/');
+        const response = await axios.get(`${API_URL}/api/skills/`);
         const allSkills = response.data;
         
         const techSkills = allSkills.filter(skill => !['English', 'French', 'Spanish', 'Turkish'].includes(skill.name));

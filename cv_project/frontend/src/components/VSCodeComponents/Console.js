@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-
+import { API_URL } from '../../config';
 const Console = ({ language, cvStructure }) => {
   const [personalInfo, setPersonalInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,10 +41,17 @@ const Console = ({ language, cvStructure }) => {
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
+      console.log('Fetching personal info...');
+      console.log('API URL:', API_URL);
+      console.log('Language:', language);
       setIsLoading(true);
       try {
-        const response = await axios.get(`http://localhost:8000/api/personal-info/?lang=${language}`);
-        if (response.data.length > 0) {
+        const fullUrl = `${API_URL}/api/personal-info/?lang=${language}`;
+        console.log('Full request URL:', fullUrl);
+        const response = await axios.get(fullUrl);
+        console.log('API response:', response.data);
+        if (response.data && response.data.length > 0) {
+          console.log('Setting personal info:', response.data[0]);
           setPersonalInfo(response.data[0]);
           setMessages([
             { type: 'command', content: `➜ ~ ssh ${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server`, status: 'success' },
@@ -55,11 +62,14 @@ const Console = ({ language, cvStructure }) => {
             { type: 'output', content: t('welcomeMessage', { name: response.data[0].name }) }
           ]);
           setIsTalkWithMeRunning(true);
+        } else {
+          console.warn('No personal info data received');
+          setError('Aucune information personnelle disponible');
         }
-        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching personal info:', error);
+        console.error('Error fetching personal info:', error.response || error);
         setError(t('connectionError'));
+      } finally {
         setIsLoading(false);
       }
     };

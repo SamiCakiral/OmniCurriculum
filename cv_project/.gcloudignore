@@ -1,0 +1,12 @@
+*.pyc
+__pycache__
+/media
+*.log
+.DS_Store
+personal_data.json
+.git
+.gitignore
+node_modules
+npm-debug.log
+src
+public

@@ -1,61 +1,108 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import render
-from django.template.loader import render_to_string
-from django.http import HttpResponse
-from django.template.loader import get_template
+from django.template.loader import render_to_string, get_template
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from weasyprint import HTML, CSS
 from weasyprint.text.fonts import FontConfiguration
-from django.conf import settings
 import qrcode
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 from PIL import Image
 import base64
 from io import BytesIO
-from django.views.decorators.csrf import csrf_exempt
 import os
 import json
-from .models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
-from .serializers import PersonalInfoSerializer, EducationSerializer, WorkExperienceSerializer, SkillSerializer, ProjectSerializer, LanguageSerializer, HobbySerializer, CertificationSerializer
+
+import logging
+
+
+if settings.USE_FIRESTORE:
+    from firebase_admin import firestore
+    db = firestore.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_ID'))
+else:
+    from .models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
+    from .serializers import PersonalInfoSerializer, EducationSerializer, WorkExperienceSerializer, SkillSerializer, ProjectSerializer, LanguageSerializer, HobbySerializer, CertificationSerializer
 
 class LanguageFilterMixin:
     def get_queryset(self):
-        queryset = super().get_queryset()
-        language = self.request.query_params.get('lang', 'fr')
-        return queryset.filter(language=language)
+        if settings.USE_FIRESTORE:
+            language = self.request.query_params.get('lang', 'fr')
+            return [doc.to_dict() for doc in db.collection(self.collection_name).where('language', '==', language).get()]
+        else:
+            return super().get_queryset().filter(language=self.request.query_params.get('lang', 'fr'))
 
-class PersonalInfoViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = PersonalInfo.objects.all()
-    serializer_class = PersonalInfoSerializer
+class BaseViewSet(LanguageFilterMixin, viewsets.ModelViewSet):
+    def list(self, request):
+        if settings.USE_FIRESTORE:
+            queryset = self.get_queryset()
+            return Response(queryset)
+        else:
+            return super().list(request)
 
-class EducationViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Education.objects.all()
-    serializer_class = EducationSerializer
+class PersonalInfoViewSet(BaseViewSet):
+    collection_name = 'personal_info'
+    queryset = PersonalInfo.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = PersonalInfoSerializer if not settings.USE_FIRESTORE else None
+    basename = 'personal-info'
 
-class WorkExperienceViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = WorkExperience.objects.all()
-    serializer_class = WorkExperienceSerializer
+class EducationViewSet(BaseViewSet):
+    collection_name = 'education'
+    queryset = Education.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = EducationSerializer if not settings.USE_FIRESTORE else None
+    basename = 'education'
 
-class SkillViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
+class WorkExperienceViewSet(BaseViewSet):
+    collection_name = 'work_experience'
+    queryset = WorkExperience.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = WorkExperienceSerializer if not settings.USE_FIRESTORE else None
+    basename = 'work-experience'
 
-class ProjectViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+class SkillViewSet(BaseViewSet):
+    collection_name = 'skill'
+    queryset = Skill.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = SkillSerializer if not settings.USE_FIRESTORE else None
+    basename = 'skills'
 
-class LanguageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Language.objects.all()
-    serializer_class = LanguageSerializer
+    def get_queryset(self):
+        if settings.USE_FIRESTORE:
+            return [doc.to_dict() for doc in db.collection(self.collection_name).get()]
+        else:
+            return Skill.objects.all()
 
-class HobbyViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Hobby.objects.all()
-    serializer_class = HobbySerializer
+    def list(self, request):
+        queryset = self.get_queryset()
+        if settings.USE_FIRESTORE:
+            return Response(queryset)
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
 
-class CertificationViewSet(LanguageFilterMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Certification.objects.all()
-    serializer_class = CertificationSerializer
+class ProjectViewSet(BaseViewSet):
+    collection_name = 'project'
+    queryset = Project.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = ProjectSerializer if not settings.USE_FIRESTORE else None
+    basename = 'projects'
+
+class LanguageViewSet(BaseViewSet):
+    collection_name = 'language'
+    queryset = Language.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = LanguageSerializer if not settings.USE_FIRESTORE else None
+    basename = 'languages'
+
+class HobbyViewSet(BaseViewSet):
+    collection_name = 'hobby'
+    queryset = Hobby.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = HobbySerializer if not settings.USE_FIRESTORE else None
+    basename = 'hobbies'
+
+class CertificationViewSet(BaseViewSet):
+    collection_name = 'certification'
+    queryset = Certification.objects.all() if not settings.USE_FIRESTORE else None
+    serializer_class = CertificationSerializer if not settings.USE_FIRESTORE else None
+    basename = 'certifications'
 
 def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
     qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=4)
@@ -66,25 +113,21 @@ def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
 
     if logo_path:
         logo = Image.open(logo_path)
-        # Redimensionner le logo pour qu'il occupe environ 15% du QR code
         basewidth = int(img.size[0] * 0.10)
         wpercent = (basewidth / float(logo.size[0]))
         hsize = int((float(logo.size[1]) * float(wpercent)))
         logo = logo.resize((basewidth, hsize), Image.LANCZOS)
         
-        # Calculer la position pour le logo dans le coin
         if logo_position == 'bottomright':
             pos = (img.size[0] - logo.size[0] - 10, img.size[1] - logo.size[1] - 10)
         elif logo_position == 'bottomleft':
             pos = (10, img.size[1] - logo.size[1] - 10)
-        else:  # Par défaut, en bas à droite
+        else:
             pos = (img.size[0] - logo.size[0] - 10, img.size[1] - logo.size[1] - 10)
         
-        # Créer une nouvelle image avec un fond transparent pour le logo
         logo_with_transparency = Image.new('RGBA', img.size, (0, 0, 0, 0))
         logo_with_transparency.paste(logo, pos, logo)
         
-        # Combiner le QR code avec le logo
         img = Image.alpha_composite(img.convert('RGBA'), logo_with_transparency)
 
     buffered = BytesIO()
@@ -92,30 +135,67 @@ def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
     return base64.b64encode(buffered.getvalue()).decode()
 
 def get_cv_context(lang='fr', theme='light', request=None):
-    personal_info = PersonalInfo.objects.filter(language=lang).first()
-    
-    # Chemins vers les logos
-    linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
-    github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
-    
-    # Generate QR codes
-    page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
-    linkedin_qr = generate_qr_code(personal_info.linkedin_url, linkedin_logo_path) if personal_info and personal_info.linkedin_url else None
-    github_qr = generate_qr_code(personal_info.github_url, github_logo_path) if personal_info and personal_info.github_url else None
+    if settings.USE_FIRESTORE:
+        db = firestore.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_ID'))
+        personal_info_docs = db.collection('personal_info').get()
+        
+        #doc id = "en" or "fr"
+        personal_info = next((doc.to_dict() for doc in personal_info_docs if doc.id == lang), None)
+        
+        
+        linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
+        github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
+        
+        page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
+        linkedin_qr = generate_qr_code(personal_info['linkedin_url'], linkedin_logo_path) if personal_info and 'linkedin_url' in personal_info else None
+        github_qr = generate_qr_code(personal_info['github_url'], github_logo_path) if personal_info and 'github_url' in personal_info else None
+        
+        education = db.collection('education').where('language', '==', lang).get()
+        work_experience = db.collection('work_experience').where('language', '==', lang).get()
+        skills = db.collection('skills').get()
+        projects = db.collection('project').where('language', '==', lang).get()
+        languages = db.collection('language').where('language', '==', lang).get()
+        hobbies = db.collection('hobby').where('language', '==', lang).get()
+        certifications = db.collection('certification').where('language', '==', lang).get()
+        
+        skills_data = {
+            'programming_languages': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'programming_languages'],
+            'hard_skills': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'hard_skills'],
+            'soft_skills': [skill.to_dict() for skill in skills if skill.to_dict()['type'] == 'soft_skills'],
+        }
+    else:
+        personal_info = PersonalInfo.objects.filter(language=lang).first()
+        
+        linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
+        github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
+        
+        page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
+        linkedin_qr = generate_qr_code(personal_info.linkedin_url, linkedin_logo_path) if personal_info and personal_info.linkedin_url else None
+        github_qr = generate_qr_code(personal_info.github_url, github_logo_path) if personal_info and personal_info.github_url else None
+        
+        education = Education.objects.filter(language=lang)
+        work_experience = WorkExperience.objects.filter(language=lang)
+        skills = Skill.objects.all()
+        projects = Project.objects.filter(language=lang)
+        languages = Language.objects.all()
+        hobbies = Hobby.objects.filter(language=lang)
+        certifications = Certification.objects.filter(language=lang)
+        
+        skills_data = {
+            'programming_languages': [skill for skill in skills if skill.type == 'programming_languages'],
+            'hard_skills': [skill for skill in skills if skill.type == 'hard_skills'],
+            'soft_skills': [skill for skill in skills if skill.type == 'soft_skills'],
+        }
     
     return {
-        'personal_info': PersonalInfo.objects.filter(language=lang).first(),
-        'education': Education.objects.filter(language=lang),
-        'work_experience': WorkExperience.objects.filter(language=lang),
-        'skills': {
-            'programming_languages': Skill.objects.filter(type='programming_languages'),
-            'hard_skills': Skill.objects.filter(type='hard_skills'),
-            'soft_skills': Skill.objects.filter(type='soft_skills'),
-        },
-        'projects': Project.objects.filter(language=lang),
-        'languages': Language.objects.all(),
-        'hobbies': Hobby.objects.filter(language=lang),
-        'certifications': Certification.objects.filter(language=lang),
+        'personal_info': personal_info,
+        'education': education,
+        'work_experience': work_experience,
+        'skills': skills_data,
+        'projects': projects,
+        'languages': languages,
+        'hobbies': hobbies,
+        'certifications': certifications,
         'lang': lang,
         'theme': theme,
         'qr_codes': {
@@ -138,7 +218,7 @@ def cv_view(request):
 def cv_api(request):
     lang = request.GET.get('lang', 'fr')
     theme = request.GET.get('theme', 'light')
-    context = get_cv_context(lang, theme,request)
+    context = get_cv_context(lang, theme, request)
     html = render_to_string('cv/cv_template.html', context)
     return HttpResponse(html)
 
@@ -162,8 +242,11 @@ def generate_pdf(request):
         pdf = html.write_pdf(stylesheets=[css], font_config=font_config)
 
         response = HttpResponse(pdf, content_type='application/pdf')
-        nom_prenom = context['personal_info'].name.replace(' ', '_')
+        nom_prenom = context['personal_info']['name'].replace(' ', '_') if isinstance(context['personal_info'], dict) else context['personal_info'].name.replace(' ', '_')
         response['Content-Disposition'] = f'attachment; filename="CV_{nom_prenom}.pdf"'
         return response
     
     return HttpResponse("Méthode non autorisée", status=405)
+
+def get_api_url(request):
+    return JsonResponse({'apiUrl': os.environ.get('REACT_APP_API_URL', 'http://localhost:8000')})

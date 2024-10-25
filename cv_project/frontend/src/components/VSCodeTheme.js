@@ -14,7 +14,7 @@ const VSCodeTheme = ({ language, setLanguage }) => {
   const [showExplorer, setShowExplorer] = useState(true);
   const [showConsole, setShowConsole] = useState(true);
   const [theme, setTheme] = useState('dark');
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(true);
   const [showCVPanel, setShowCVPanel] = useState(false);
   const [consoleHeight, setConsoleHeight] = useState(300);
   const minConsoleHeight = 0;
@@ -103,6 +103,11 @@ const VSCodeTheme = ({ language, setLanguage }) => {
   };
 
   const [cvStructure, setCvStructure] = useState({ '~': {} });
+
+  useEffect(() => {
+    // Ajouter les paramètres aux fichiers actifs au chargement initial
+    addActiveFile({ section: 'Paramètres', name: 'settings.json' });
+  }, []);
 
   return (
     <div className={`vscode-layout ${theme}`}>

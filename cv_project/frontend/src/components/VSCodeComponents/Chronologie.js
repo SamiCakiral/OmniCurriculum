@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../config';
 
 const translations = {
   fr: {
@@ -21,13 +22,15 @@ const Chronologie = ({ language, addActiveFile }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const t = useCallback((key) => translations[language][key] || key, [language]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [education, workExperience, projects] = await Promise.all([
-          axios.get(`http://localhost:8000/api/education/?lang=${language}`),
-          axios.get(`http://localhost:8000/api/work-experience/?lang=${language}`),
-          axios.get(`http://localhost:8000/api/projects/?lang=${language}`)
+          axios.get(`${API_URL}/api/education/?lang=${language}`),
+          axios.get(`${API_URL}/api/work-experience/?lang=${language}`),
+          axios.get(`${API_URL}/api/projects/?lang=${language}`)
         ]);
 
         const items = [
@@ -47,6 +50,14 @@ const Chronologie = ({ language, addActiveFile }) => {
             description: exp.description,
             type: 'work',
             relatedProjects: projects.data.filter(proj => proj.work_experience === exp.id)
+          })),
+          ...projects.data.map(proj => ({
+            title: proj.title,
+            subtitle: proj.short_description,
+            startDate: proj.start_date,
+            endDate: proj.end_date,
+            description: proj.long_description,
+            type: 'project'
           }))
         ].sort((a, b) => {
           if (a.endDate === null || a.endDate === 'Présent') return -1;
@@ -66,19 +77,26 @@ const Chronologie = ({ language, addActiveFile }) => {
     fetchData();
   }, [language]);
 
-  const handleItemClick = (item) => {
-    if (item.type === 'work' && item.relatedProjects && item.relatedProjects.length > 0) {
-      item.relatedProjects.forEach(project => {
-        addActiveFile({
-          section: 'Projets',
-          name: project.title,
-          content: project.long_description
-        });
+  const handleItemClick = useCallback((item) => {
+    console.log("Item clicked:", item);  // Ajout d'un log pour le débogage
+    if (item.type === 'project') {
+      addActiveFile({
+        section: 'Projets',
+        name: `${item.title}.md`,
+        content: `# ${item.title}
+
+## Description courte
+${item.subtitle}
+
+## Description longue
+${item.description}
+
+## Période
+${new Date(item.startDate).toLocaleDateString()} - ${item.endDate ? new Date(item.endDate).toLocaleDateString() : t('present')}
+`
       });
     }
-  };
-
-  const t = useCallback((key) => translations[language][key] || key, [language]);
+  }, [addActiveFile, t]);
 
   if (isLoading) return <div className="p-4">{t('loading')}</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -89,8 +107,16 @@ const Chronologie = ({ language, addActiveFile }) => {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="flex flex-col space-y-4">
           {chronologieItems.map((item, index) => (
-            <div key={index} className="flex items-start cursor-pointer" onClick={() => handleItemClick(item)}>
-              <div className={`w-3 h-3 mt-1 rounded-full ${item.type === 'education' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+            <div 
+              key={index} 
+              className="flex items-start cursor-pointer hover:bg-[var(--hover-bg)]" 
+              onClick={() => handleItemClick(item)}
+            >
+              <div className={`w-3 h-3 min-w-[0.75rem] mt-1 rounded-full ${
+                item.type === 'education' ? 'bg-blue-500' : 
+                item.type === 'work' ? 'bg-green-500' : 
+                'bg-yellow-500'
+              }`}></div>
               <div className="w-10 h-px bg-gray-600 mx-2 mt-2"></div>
               <div className="flex flex-col">
                 <div className="text-sm font-semibold">{item.title}</div>

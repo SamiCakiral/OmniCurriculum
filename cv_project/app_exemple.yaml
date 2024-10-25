@@ -1,0 +1,29 @@
+runtime: python311
+
+entrypoint: gunicorn -b :$PORT cv_project.wsgi:application
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: "cv_project.settings"
+  USE_FIRESTORE: "True"
+  GAE_APPLICATION: "true"
+  GOOGLE_APPLICATION_CREDENTIALS: secrets/your-credentials-file.json
+  REACT_APP_API_URL: "https://your-app-name.ew.r.appspot.com"
+  DEBUG : false
+
+handlers:
+- url: /static
+  static_dir: staticfiles
+- url: /(.*\.(json|ico|js|css|png|jpg|gif|woff|woff2|ttf|svg))$
+  static_files: frontend/build/\1
+  upload: frontend/build/.*\.(json|ico|js|css|png|jpg|gif|woff|woff2|ttf|svg)$
+- url: /static/js/(.*\.js)
+  static_files: frontend/build/static/js/\1
+  upload: frontend/build/static/js/.*\.js
+- url: /static/css/(.*\.css)
+  static_files: frontend/build/static/css/\1
+  upload: frontend/build/static/css/.*\.css
+- url: /.*
+  script: auto
+
+includes:
+- .env

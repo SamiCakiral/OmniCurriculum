@@ -12,8 +12,25 @@ django.setup()
 from django.apps import apps
 from django.db import connections
 from django.db.utils import OperationalError
+from django.conf import settings
 
 from cv.models import PersonalInfo, Education, WorkExperience, Skill, Project, Language, Hobby, Certification
+
+# Firestore setup
+USE_FIRESTORE = settings.USE_FIRESTORE
+if USE_FIRESTORE:
+    import firebase_admin
+    from firebase_admin import credentials, firestore
+    from google.cloud import firestore as firestore_client
+    
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
+        options = {
+            "projectId": os.getenv('PROJECT_ID'),
+            'databaseURL': os.getenv('DATABASE_URL')
+        }
+        firebase_admin.initialize_app(cred, options=options)
+        db = firestore_client.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_URL'))
 
 def check_database_connection():
     db_conn = connections['default']
@@ -81,6 +98,8 @@ def populate_db():
             photo_url=info["photo_url"],
             language=lang
         )
+        if USE_FIRESTORE:
+            db.collection('personal_info').document(lang).set(info)
 
     # Education
     for edu in data['education']:
@@ -96,8 +115,18 @@ def populate_db():
                     location=edu['location'],
                     language=lang
                 )
+                if USE_FIRESTORE:
+                    edu_data = edu[lang]
+                    edu_data['start_date'] = edu['start_date']
+                    edu_data['end_date'] = edu['end_date']
+                    edu_data['location'] = edu['location']
+                    edu_data['language'] = lang
+                    db.collection('education').add(edu_data)
+                
                 for skill in edu.get('key_learning', []):
                     Skill.objects.get_or_create(name=skill, type='education')
+                    if USE_FIRESTORE:
+                        db.collection('skills').add({'name': skill, 'type': 'education'})
 
     # WorkExperience
     for exp in data['work_experience']:
@@ -114,17 +143,31 @@ def populate_db():
                     location=exp['location'],
                     language=lang
                 )
+                if USE_FIRESTORE:
+                    exp_data = exp[lang]
+                    exp_data['start_date'] = exp['start_date']
+                    exp_data['end_date'] = exp['end_date']
+                    exp_data['location'] = exp['location']
+                    exp_data['language'] = lang
+                    db.collection('work_experience').add(exp_data)
+                
                 for skill in exp.get('key_learning', []):
                     Skill.objects.get_or_create(name=skill, type='work')
+                    if USE_FIRESTORE:
+                        db.collection('skills').add({'name': skill, 'type': 'work'})
 
     # Skills
     for skill_type, skills in data['skills'].items():
         for skill in skills:
             Skill.objects.get_or_create(name=skill, type=skill_type)
+            if USE_FIRESTORE:
+                db.collection('skills').add({'name': skill, 'type': skill_type})
 
     # Languages
     for lang in data['languages']:
         Language.objects.create(**lang)
+        if USE_FIRESTORE:
+            db.collection('language').add(lang)
 
     # Projects
     for proj in data['projects']:
@@ -138,6 +181,12 @@ def populate_db():
                     live_url=proj[lang].get('live_url'),
                     language=lang
                 )
+                if USE_FIRESTORE:
+                    proj_data = proj[lang]
+                    proj_data['technologies'] = proj.get('technologies', [])
+                    proj_data['language'] = lang
+                    db.collection('project').add(proj_data)
+                
                 for tech in proj.get('technologies', []):
                     skill, _ = Skill.objects.get_or_create(name=tech, type='technology')
                     project.technologies.add(skill)
@@ -152,8 +201,14 @@ def populate_db():
                     long_description=hobby[lang]['long_description'],
                     language=lang
                 )
+                if USE_FIRESTORE:
+                    hobby_data = hobby[lang]
+                    hobby_data['language'] = lang
+                    db.collection('hobby').add(hobby_data)
 
     print("Base de données peuplée avec succès!")
+    if USE_FIRESTORE:
+        print("Firestore également peuplé avec succès!")
 
 if __name__ == '__main__':
     populate_db()
