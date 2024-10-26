@@ -6,8 +6,9 @@ from typing import List, Dict, Optional
 from asgiref.sync import sync_to_async
 from mistralai import Mistral
 import os
+from firebase_admin import firestore
 
-from .models import PersonalInfo, Project, WorkExperience, Education, Skill
+from .models import PersonalInfo, Project, WorkExperience, Education, Skill, Hobby
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,9 @@ class AIAssistant:
         self.conversation_history = []
         self.mistral = MistralClient()  # Utilise le singleton
         self.initialize_context()
+        self.use_firestore = os.getenv('USE_FIRESTORE', 'False').lower() == 'true'
+        if self.use_firestore:
+            self.db = firestore.client()
         
     def initialize_context(self):
         """Charge uniquement les informations de base."""
@@ -118,18 +122,33 @@ class AIAssistant:
     async def load_personal_info(self) -> None:
         """Charge les informations personnelles depuis la base de données."""
         try:
-            info = await sync_to_async(PersonalInfo.objects.filter)(language=self.language).first()
-            if info:
-                self.memory['personal_info'] = {
-                    'name': info.name,
-                    'title': info.title,
-                    'wanted_position': info.wanted_position,
-                    'summary': info.summary,
-                    'email': info.email,
-                    'phone': info.phone,
-                }
+            if self.use_firestore:
+                # Récupération via Firestore
+                docs = self.db.collection('personal_info').where('language', '==', self.language).get()
+                if docs:
+                    info = docs[0].to_dict()
+                    self.memory['personal_info'] = {
+                        'name': info['name'],
+                        'title': info['title'],
+                        'wanted_position': info['wanted_position'],
+                        'summary': info['summary'],
+                        'email': info['email'],
+                        'phone': info['phone'],
+                    }
             else:
-                logger.warning("Aucune information personnelle trouvée")
+                # Récupération via Django ORM (code existant)
+                info = await sync_to_async(PersonalInfo.objects.filter)(language=self.language).first()
+                if info:
+                    self.memory['personal_info'] = {
+                        'name': info.name,
+                        'title': info.title,
+                        'wanted_position': info.wanted_position,
+                        'summary': info.summary,
+                        'email': info.email,
+                        'phone': info.phone,
+                    }
+                else:
+                    logger.warning("Aucune information personnelle trouvée")
         except Exception as e:
             logger.error(f"Erreur lors du chargement des informations personnelles: {e}")
 
@@ -204,19 +223,38 @@ class AIAssistant:
             return "Une erreur s'est produite lors de la recherche de la formation."
 
     @lru_cache(maxsize=32)
-    async def get_skills(self, skill_type: str) -> str:
-        """Récupère les compétences par type avec cache."""
+    async def get_skills(self) -> str:
+        """Récupère toutes les compétences."""
         try:
-            skills = await sync_to_async(list)(
-                Skill.objects.filter(type=skill_type, language=self.language)
-            )
-            if skills:
-                self.memory[f'{skill_type}_skills'] = [skill.name for skill in skills]
-                return f"J'ai chargé mes compétences de type {skill_type}."
-            return f"Je n'ai pas trouvé de compétences de type '{skill_type}'."
+            if self.use_firestore:
+                # Récupération via Firestore
+                skills_ref = self.db.collection('skills')
+                docs = skills_ref.get()
+                
+                # Organiser les compétences par type
+                skills_by_type = {}
+                for doc in docs:
+                    skill = doc.to_dict()
+                    skill_type = skill['type']  # 'technology', 'work', 'education', etc.
+                    if skill_type not in skills_by_type:
+                        skills_by_type[skill_type] = []
+                    skills_by_type[skill_type].append(skill['name'])
+            else:
+                # Récupération via Django ORM
+                skills = await sync_to_async(list)(Skill.objects.all())
+                skills_by_type = {}
+                for skill in skills:
+                    if skill.type not in skills_by_type:
+                        skills_by_type[skill.type] = []
+                    skills_by_type[skill.type].append(skill.name)
+
+            if skills_by_type:
+                self.memory['discovered_skills'] = skills_by_type
+                return json.dumps(skills_by_type, ensure_ascii=False)
+            return "Aucune compétence trouvée."
         except Exception as e:
-            logger.error(f"Erreur lors de la recherche des compétences: {e}")
-            return "Une erreur s'est produite lors de la recherche des compétences."
+            logger.error(f"Erreur lors de la récupération des compétences: {e}")
+            return "Erreur lors de la récupération des compétences."
 
     def get_tools(self) -> List[Dict]:
         """Définit les outils disponibles pour l'IA selon la doc Mistral."""
@@ -250,6 +288,30 @@ class AIAssistant:
                 "function": {
                     "name": "get_skills",
                     "description": "Récupère la liste complète des compétences. À utiliser AVANT de parler des compétences.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "list_education",
+                    "description": "Récupère tout le parcours éducatif",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "list_hobbies",
+                    "description": "Récupère tous les hobbies et centres d'intérêt",
                     "parameters": {
                         "type": "object",
                         "properties": {},
@@ -294,7 +356,7 @@ class AIAssistant:
             3. N'hésitez pas à montrer de l'enthousiasme pour vos projets et réalisations
             4. Soyez précis dans vos réponses mais gardez un ton conversationnel
             5. Si on vous pose une question sur un projet ou une expérience spécifique, utilisez les fonctions disponibles pour obtenir plus d'informations si nécessaire
-            6. Vous ne devez absolument JAMAIS inventer d'informations. Si jamais vous ne savez pas répondre, dîtes le clairement. Si vous ne savez pas, expliquez comment contacter le vrai toi pour plus d'informations.
+            6. Vous ne devez absolument JAMAIS inventer d'informations.
 
 
             RÈGLES :
@@ -302,16 +364,14 @@ class AIAssistant:
             2. Réponds directement aux questions sans lister tous les projets
             3. Garde en mémoire le contexte de la conversation
             4. Sois naturel, comme dans une vraie conversation
-            5. Si tu ne sais pas quelque chose, dis-le simplement
+            5. Si tu ne sais pas quelque chose, dis-le simplement "Je ne sais pas"
             
             UTILISATION DES TOOLS :
             - list_all_projects() : UNIQUEMENT si on te pose une question sur les projets et si tu sais pas une information
             - list_all_experiences() : UNIQUEMENT si on te pose une question sur l'expérience si tu connais pas la réponse
             - get_skills() : UNIQUEMENT si on te pose une question sur les compétences
-            
-            Ne dis pas "Je vérifie les informations" sauf si tu utilises vraiment un tool.
 
-            Si on te demande, ou si tu ne sais pas quelque chose demandé, tu fournis le contact :
+            Si on te demande, ou si tu n'a pas l'information demandée, tu fournis le contact mail en priorité. Tu fournis le numéro de telephone si demandé explicitement.
             
             Contact :
             - Email: {self.memory.get('personal_info', {}).get('email')}
@@ -425,34 +485,48 @@ class AIAssistant:
             return [f"Une erreur s'est produite: {str(e)}"]
 
     async def list_all_projects(self) -> str:
-        """Récupère et mémorise tous les projets."""
+        """Récupère tous les projets."""
         try:
-            # Fonction synchrone pour obtenir les technologies
-            def get_technologies(project):
-                return [tech.name for tech in project.technologies.all()]
-
-            # Récupérer les projets
-            projects = await sync_to_async(list)(
-                Project.objects.filter(language=self.language)
-            )
-            
-            if projects:
-                project_list = []
-                for project in projects:
-                    # Wrapper l'appel aux technologies dans sync_to_async
-                    technologies = await sync_to_async(get_technologies)(project)
-                    project_info = {
-                        'title': project.title,
-                        'short_description': project.short_description,
-                        'long_description': project.long_description,
-                        'github_url': project.github_url,
-                        'live_url': project.live_url,
+            if self.use_firestore:
+                # Récupération via Firestore
+                proj_ref = self.db.collection('project')
+                docs = proj_ref.where('language', '==', self.language).get()
+                
+                projects = []
+                for doc in docs:
+                    proj = doc.to_dict()
+                    proj_info = {
+                        'title': proj['title'],
+                        'short_description': proj['short_description'],
+                        'long_description': proj['long_description'],
+                        'github_url': proj.get('github_url', ''),
+                        'live_url': proj.get('live_url', ''),
+                        'technologies': proj.get('technologies', [])  # Les technologies sont déjà une liste dans Firestore
+                    }
+                    projects.append(proj_info)
+            else:
+                # Récupération via Django ORM
+                projects = await sync_to_async(list)(Project.objects.filter(language=self.language))
+                projects_list = []
+                
+                for proj in projects:
+                    # Utilisation de sync_to_async correctement pour les technologies
+                    technologies = await sync_to_async(lambda p: list(p.technologies.all().values_list('name', flat=True)))(proj)
+                    
+                    proj_info = {
+                        'title': proj.title,
+                        'short_description': proj.short_description,
+                        'long_description': proj.long_description,
+                        'github_url': proj.github_url or '',
+                        'live_url': proj.live_url or '',
                         'technologies': technologies
                     }
-                    project_list.append(project_info)
-                
-                self.memory['discovered_projects'] = project_list
-                return json.dumps(project_list, ensure_ascii=False)
+                    projects_list.append(proj_info)
+                projects = projects_list
+
+            if projects:
+                self.memory['discovered_projects'] = projects
+                return json.dumps(projects, ensure_ascii=False)
             return "Aucun projet trouvé."
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des projets: {e}")
@@ -461,11 +535,32 @@ class AIAssistant:
     async def list_all_experiences(self) -> str:
         """Récupère toutes les expériences professionnelles."""
         try:
-            experiences = await sync_to_async(list)(
-                WorkExperience.objects.filter(language=self.language).order_by('-start_date')
-            )
-            if experiences:
-                self.memory['discovered_experiences'] = [
+            if self.use_firestore:
+                # Récupération via Firestore
+                exp_ref = self.db.collection('work_experience')
+                docs = exp_ref.where('language', '==', self.language).get()
+                
+                experiences = []
+                for doc in docs:
+                    exp = doc.to_dict()
+                    exp_info = {
+                        'company': exp['company'],
+                        'position': exp['position'],
+                        'short_description': exp['short_description'],
+                        'long_description': exp['long_description'],
+                        'objectif_but': exp['Objectif_but'],
+                        'start_date': exp['start_date'],
+                        'end_date': exp['end_date'] if exp.get('end_date') else "Présent",
+                        'location': exp['location'],
+                        'key_learning': exp.get('key_learning', [])  # Ajout des compétences clés
+                    }
+                    experiences.append(exp_info)
+            else:
+                # Récupération via Django ORM
+                experiences = await sync_to_async(list)(
+                    WorkExperience.objects.filter(language=self.language).order_by('-start_date')
+                )
+                experiences = [
                     {
                         'company': exp.company,
                         'position': exp.position,
@@ -478,32 +573,109 @@ class AIAssistant:
                     }
                     for exp in experiences
                 ]
-                return json.dumps(self.memory['discovered_experiences'], ensure_ascii=False)
+
+            if experiences:
+                self.memory['discovered_experiences'] = experiences
+                return json.dumps(experiences, ensure_ascii=False)
             return "Aucune expérience trouvée."
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des expériences: {e}")
             return "Erreur lors de la récupération des expériences."
 
-    async def get_skills(self) -> str:
-        """Récupère toutes les compétences."""
+    async def list_education(self) -> str:
+        """Récupère tout le parcours éducatif."""
         try:
-            skills = await sync_to_async(list)(
-                Skill.objects.all()
-            )
-            if skills:
-                # Organiser les compétences par type
-                skills_by_type = {}
-                for skill in skills:
-                    if skill.type not in skills_by_type:
-                        skills_by_type[skill.type] = []
-                    skills_by_type[skill.type].append(skill.name)
+            if self.use_firestore:
+                # Récupération via Firestore
+                edu_ref = self.db.collection('education')
+                docs = edu_ref.where('language', '==', self.language)\
+                             .order_by('start_date', direction=firestore.Query.DESCENDING)\
+                             .get()
                 
-                self.memory['discovered_skills'] = skills_by_type
-                return json.dumps(skills_by_type, ensure_ascii=False)
-            return "Aucune compétence trouvée."
+                education_list = []
+                for doc in docs:
+                    edu = doc.to_dict()
+                    edu_info = {
+                        'institution': edu['institution'],
+                        'degree': edu.get('degree', ''),
+                        'field_of_study': edu['field_of_study'],
+                        'description': edu['description'],
+                        'start_date': edu['start_date'],
+                        'end_date': edu['end_date'] if edu.get('end_date') else "Présent",
+                        'location': edu['location'],
+                        'key_learning': edu.get('key_learning', [])  # Compétences acquises
+                    }
+                    education_list.append(edu_info)
+            else:
+                # Récupération via Django ORM
+                education = await sync_to_async(list)(
+                    Education.objects.filter(language=self.language).order_by('-start_date')
+                )
+                education_list = [
+                    {
+                        'institution': edu.institution,
+                        'degree': edu.degree,
+                        'field_of_study': edu.field_of_study,
+                        'description': edu.description,
+                        'start_date': str(edu.start_date),
+                        'end_date': str(edu.end_date) if edu.end_date else "Présent",
+                        'location': edu.location,
+                        'key_learning': await sync_to_async(lambda: [
+                            skill.name for skill in Skill.objects.filter(type='education')
+                        ])()
+                    }
+                    for edu in education
+                ]
+
+            if education_list:
+                self.memory['discovered_education'] = education_list
+                return json.dumps(education_list, ensure_ascii=False)
+            return "Aucun parcours éducatif trouvé."
         except Exception as e:
-            logger.error(f"Erreur lors de la récupération des compétences: {e}")
-            return "Erreur lors de la récupération des compétences."
+            logger.error(f"Erreur lors de la récupération du parcours éducatif: {e}")
+            return "Erreur lors de la récupération du parcours éducatif."
+
+    async def list_hobbies(self) -> str:
+        """Récupère tous les hobbies et centres d'intérêt."""
+        try:
+            if self.use_firestore:
+                # Récupération via Firestore
+                hobby_ref = self.db.collection('hobby')
+                docs = hobby_ref.where('language', '==', self.language).get()
+                
+                hobbies_list = []
+                for doc in docs:
+                    hobby = doc.to_dict()
+                    hobby_info = {
+                        'title': hobby['title'],
+                        'short_description': hobby['short_description'],
+                        'long_description': hobby['long_description']
+                    }
+                    hobbies_list.append(hobby_info)
+            else:
+                # Récupération via Django ORM
+                hobbies = await sync_to_async(list)(
+                    Hobby.objects.filter(language=self.language)
+                )
+                hobbies_list = [
+                    {
+                        'title': hobby.title,
+                        'short_description': hobby.short_description,
+                        'long_description': hobby.long_description
+                    }
+                    for hobby in hobbies
+                ]
+
+            if hobbies_list:
+                self.memory['discovered_hobbies'] = hobbies_list
+                return json.dumps(hobbies_list, ensure_ascii=False)
+            return "Aucun hobby trouvé."
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des hobbies: {e}")
+            return "Erreur lors de la récupération des hobbies."
+
+
+
 
 
 
