@@ -170,7 +170,7 @@
 
         .tag {
             font-size: 0.8rem;
-            padding: 0.2rem 0.5rem;
+            padding: 0.1rem 0.3rem;
             background-color: var(--highlight-color);
             color: whitesmoke;
             border-radius: 3px;
@@ -248,10 +248,17 @@
                 overflow: hidden;
             }
 
-            .sidebar {
-                width: 30%;
-                padding: 10mm;
-            }
+            
+                .sidebar {
+          width: 35%;
+          height: 100%;
+          padding: 1.5rem;
+          background-color: var(--bg-secondary);
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+      }
+            
 
             .main-content {
                 width: 70%;
@@ -319,11 +326,11 @@
             {% endif %}
             <h1>{{ personal_info.name }}</h1>
             <p class="title">{{ personal_info.title }}</p>
-          
-            <div class="contact-info ">
+            
+            <div class="contact-info">
                 <p>📧 <a href="mailto:{{ personal_info.email }}">{{ personal_info.email }}</a></p>
                 <p>📞 {{ personal_info.phone }}</p>
-                <p>🚗 {% if personal_info.has_vehicle %}Véhiculé{% else %}Non véhiculé{% endif %}</p>
+                <p>🚗 {% if personal_info.has_vehicle and lang == 'fr' %} Titulaire Permis B {% elif personal_info.has_vehicle and lang == 'en' %} Driver's License B {% elif not personal_info.has_vehicle and lang == 'fr' %} Non Titulaire du Permis {% elif not personal_info.has_vehicle and lang == 'en' %} No license {% endif %}</p>
                 <p>💼 {{ personal_info.years_of_experience }} ans d'expérience</p>
                 {% if personal_info.linkedin_url %}
                     <p>🔗 <a href="{{ personal_info.linkedin_url }}">LinkedIn ({{ personal_info.linkedin_username }})</a></p>
@@ -410,6 +417,7 @@
         <div class="main-content">
             <h2>// {% if lang == 'fr' %}Profil{% else %}Profile{% endif %}</h2>
             <p>{{ personal_info.summary }}</p>
+            <p style="text-align: center;"><strong>{{ personal_info.wanted_position }}</strong></p>
             <br>
             <div class="code-block">
                 <span class="comment"># {% if lang == 'fr' %}Fonction principale de ma carrière de développeur{% else %}Main function of my developer career{% endif %}</span>

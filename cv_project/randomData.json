@@ -5,28 +5,34 @@
         "title": "Ingénieur en Développement Logiciel",
         "email": "jean.dupont@email.com",
         "phone": "+33 6 12 34 56 78",
-        "summary": "Ingénieur en développement logiciel passionné avec 5 ans d'expérience. Spécialisé en Python et technologies web, je cherche à relever de nouveaux défis techniques dans une équipe innovante.",
+        "summary": "Ingénieur en développement logiciel passionné avec 5 ans d'expérience. Spécialisé en Python et technologies web.",
+        "wanted_position": "À la recherche de nouvelles opportunités en développement full-stack.",
         "years_of_experience": 5,
         "has_vehicle": true,
         "region": "Paris, France",
         "linkedin_url": "https://www.linkedin.com/in/jeandupont",
+        "linkedin_username": "Jean Dupont",
         "github_url": "https://github.com/jeandupont",
         "github_username": "jeandupont",
-        "portfolio_url": "https://jeandupont.com"
+        "portfolio_url": "https://jeandupont.com",
+        "photo_url": "https://thispersondoesnotexist.com"
       },
       "en": {
         "name": "John Smith",
         "title": "Software Development Engineer",
         "email": "john.smith@email.com",
         "phone": "+1 (555) 123-4567",
-        "summary": "Passionate software development engineer with 5 years of experience. Specialized in Python and web technologies, I'm looking to take on new technical challenges in an innovative team.",
+        "summary": "Passionate software development engineer with 5 years of experience. Specialized in Python and web technologies.",
+        "wanted_position": "Looking for new opportunities in full-stack development.",
         "years_of_experience": 5,
         "has_vehicle": true,
         "region": "San Francisco, CA",
         "linkedin_url": "https://www.linkedin.com/in/johnsmith",
+        "linkedin_username": "John Smith",
         "github_url": "https://github.com/johnsmith",
         "github_username": "johnsmith",
-        "portfolio_url": "https://johnsmith.com"
+        "portfolio_url": "https://johnsmith.com",
+        "photo_url": "https://thispersondoesnotexist.com"
       }
     },
     "education": [
@@ -50,7 +56,8 @@
           "Deep Learning"
         ],
         "start_date": "2015-09-01",
-        "end_date": "2018-06-30"
+        "end_date": "2018-06-30",
+        "location": "Paris, France"
       }
     ],
     "work_experience": [
@@ -58,95 +65,75 @@
         "fr": {
           "company": "TechInnovate Solutions",
           "position": "Développeur Full Stack Senior",
-          "short_description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux.",
-          "long_description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux.",
-          "Objectif_but": "Développer et maintenir des applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés pour des clients internationaux."
+          "short_description": "Développement d'applications web complexes",
+          "long_description": "Développement et maintenance d'applications web complexes utilisant Django et React. Leader technique sur plusieurs projets clés.",
+          "Objectif_but": "Diriger le développement technique des projets majeurs de l'entreprise."
         },
         "en": {
           "company": "TechInnovate Solutions",
           "position": "Senior Full Stack Developer",
-          "short_description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients.",
-          "long_description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects for international clients.",
-          "Objectif_but": "Develop and maintain complex web applications using Django and React. Technical lead on several key projects for international clients."
+          "short_description": "Development of complex web applications",
+          "long_description": "Development and maintenance of complex web applications using Django and React. Technical lead on several key projects.",
+          "Objectif_but": "Lead the technical development of major company projects."
         },
-
         "start_date": "2020-01-01",
-        "end_date": null
+        "end_date": null,
+        "location": "Paris, France",
+        "key_learning": [
+          "Project Management",
+          "Team Leadership",
+          "Technical Architecture",
+          "Agile Methodologies"
+        ]
       }
     ],
     "skills": {
-      "hard_skills": [
-        "Python", "Django", "Flask", "JavaScript", "React", "Node.js", "Docker", 
-        "Kubernetes", "AWS", "Git", "SQL", "MongoDB", "Machine Learning", 
-        "Data Analysis", "RESTful APIs"
-      ],
-      "soft_skills": [
-        "Résolution de problèmes complexes", "Travail d'équipe", 
-        "Communication technique", "Gestion de projet", "Apprentissage rapide"
-      ]
+      "programming_languages": ["Python", "Java", "JavaScript", "C++"],
+      "hard_skills": ["Django", "React", "Docker", "AWS", "Git", "SQL", "MongoDB"],
+      "soft_skills": ["Leadership", "Communication", "Problem Solving", "Team Management"]
     },
     "languages": [
-      {"name": "Anglais", "level": "Courant (TOEIC 950)"},
-      {"name": "Espagnol", "level": "Intermédiaire"},
-      {"name": "Français", "level": "Langue maternelle"}
-    ],
-    "hobbies": [
-      {
-        "fr": {
-          "name": "Voyages",
-          "description": "J'aime explorer de nouvelles cultures et découvrir de nouvelles destinations."
-        },
-        "en": {
-          "name": "Traveling",
-          "description": "I like to explore new cultures and discover new destinations."
-        }
-      },
-      {
-        "fr": {
-          "name": "Dance",
-          "description": "J'aime danser et découvrir de nouvelles danse."
-        },
-        "en": {
-          "name": "Dance",
-          "description": "I like to dance and discover new dances."
-        }
-      }
+      {"name": "French", "level": "Native"},
+      {"name": "English", "level": "C1"},
+      {"name": "Spanish", "level": "B2"}
     ],
     "projects": [
       {
         "fr": {
-          "title": "Plateforme d'Analyse Prédictive pour E-commerce",
-          "short_description": "Solution d'analyse pour optimiser les stocks et les ventes",
-          "long_description": "Développement d'une solution d'analyse prédictive pour optimiser les stocks et les ventes d'une plateforme e-commerce. Utilisation de Python, scikit-learn et Django pour le backend, et React pour le frontend.",
-          "github_url": "https://github.com/jeandupont/ecommerce-predictor",
-          "live_url": "https://ecommerce-predictor.example.com"
+          "title": "Plateforme Analytics",
+          "short_description": "Plateforme d'analyse de données",
+          "long_description": "Développement d'une plateforme complète d'analyse de données utilisant Python et React.",
+          "github_url": "https://github.com/jeandupont/analytics-platform",
+          "live_url": "https://analytics-platform.example.com"
         },
         "en": {
-          "title": "E-commerce Predictive Analysis Platform",
-          "short_description": "Analytics solution to optimize inventory and sales",
-          "long_description": "Development of a predictive analytics solution to optimize inventory and sales for an e-commerce platform. Using Python, scikit-learn, and Django for the backend, and React for the frontend.",
-          "github_url": "https://github.com/johnsmith/ecommerce-predictor",
-          "live_url": "https://ecommerce-predictor.example.com"
+          "title": "Analytics Platform",
+          "short_description": "Data analysis platform",
+          "long_description": "Development of a complete data analysis platform using Python and React.",
+          "github_url": "https://github.com/johnsmith/analytics-platform",
+          "live_url": "https://analytics-platform.example.com"
         },
-        "technologies": ["Python", "Django", "React", "Machine Learning"]
+        "technologies": ["Python", "React", "Docker", "AWS"],
+        "key_learning": [
+          "Cloud Architecture",
+          "Data Processing",
+          "Frontend Development",
+          "DevOps"
+        ]
       }
     ],
-    "certifications": [
+    "Hobbies": [
       {
         "fr": {
-          "name": "AWS Certified Solutions Architect",
-          "issuing_organization": "Amazon Web Services",
-          "description": "Certification professionnelle validant l'expertise en conception d'architectures cloud sur AWS."
+          "title": "Photographie",
+          "short_description": "Photographie de paysage",
+          "long_description": "Passionné de photographie de paysage et de nature. J'explore différentes techniques et styles."
         },
         "en": {
-          "name": "AWS Certified Solutions Architect",
-          "issuing_organization": "Amazon Web Services",
-          "description": "Professional certification validating expertise in designing cloud architectures on AWS."
-        },
-        "issue_date": "2022-05-15",
-        "expiration_date": "2025-05-15",
-        "credential_id": "AWS-CSA-123456",
-        "credential_url": "https://www.youracclaim.com/badges/aws-certified-solutions-architect"
+          "title": "Photography",
+          "short_description": "Landscape photography",
+          "long_description": "Passionate about landscape and nature photography. I explore different techniques and styles."
+        }
       }
     ]
-  }
+}

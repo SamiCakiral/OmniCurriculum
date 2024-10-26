@@ -122,6 +122,9 @@ class Project(models.Model):
     def get_formatted_description(self):
         return markdown(self.long_description)
 
+    def get_technologies(self):
+        return [{'name': tech.name} for tech in self.technologies.all()]
+
 class Certification(models.Model):
     LANGUAGE_CHOICES = [
         ('fr', 'Français'),

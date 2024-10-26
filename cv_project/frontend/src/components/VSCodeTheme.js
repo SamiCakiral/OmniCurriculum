@@ -161,9 +161,36 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     }, 7000);
   }, []); // Le tableau vide signifie que cet effet ne s'exécute qu'une fois au montage
 
+  // Ajoutez ces états et effets au début du composant
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [explorerVisible, setExplorerVisible] = useState(window.innerWidth > 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setWindowWidth(width);
+      if (width <= 768) {
+        setShowExplorer(false);
+      } else {
+        setShowExplorer(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className={`vscode-layout ${theme}`}>
       <div className="vscode-topbar">
+        {windowWidth <= 768 && (
+          <button 
+            className="explorer-toggle"
+            onClick={() => setShowExplorer(!showExplorer)}
+          >
+            {showExplorer ? '◀' : '▶'}
+          </button>
+        )}
         <div className="vscode-window-controls">
           <div className="vscode-window-control close"></div>
           <div className="vscode-window-control minimize"></div>

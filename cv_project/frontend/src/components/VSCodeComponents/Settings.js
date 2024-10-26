@@ -36,7 +36,7 @@ const Settings = ({ currentTheme, setTheme, language, setLanguage }) => {
 
   return (
     <div className="p-4 bg-[var(--bg-secondary)] text-[var(--text-primary)]">
-      <h2 className="text-xl mb-4">{t('settings')}</h2>
+      <h2 className="text-lg mb-4">{t('settings')}</h2>
       <div className="mb-4">
         <label className="block mb-2">{t('theme')}</label>
         <select 

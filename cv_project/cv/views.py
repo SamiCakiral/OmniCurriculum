@@ -110,8 +110,8 @@ class CertificationViewSet(BaseViewSet):
     serializer_class = CertificationSerializer if not settings.USE_FIRESTORE else None
     basename = 'certifications'
 
-def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
-    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=10, border=4)
+def generate_qr_code(data, logo_path=None, logo_position='center',scale = 0.33):
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_Q, box_size=10, border=4)
     qr.add_data(data)
     qr.make(fit=True)
 
@@ -119,7 +119,7 @@ def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
 
     if logo_path:
         logo = Image.open(logo_path)
-        basewidth = int(img.size[0] * 0.10)
+        basewidth = int(img.size[0] * scale)
         wpercent = (basewidth / float(logo.size[0]))
         hsize = int((float(logo.size[1]) * float(wpercent)))
         logo = logo.resize((basewidth, hsize), Image.LANCZOS)
@@ -128,6 +128,8 @@ def generate_qr_code(data, logo_path=None, logo_position='bottomright'):
             pos = (img.size[0] - logo.size[0] - 10, img.size[1] - logo.size[1] - 10)
         elif logo_position == 'bottomleft':
             pos = (10, img.size[1] - logo.size[1] - 10)
+        elif logo_position == 'center':
+            pos = (img.size[0] // 2 - logo.size[0] // 2, img.size[1] // 2 - logo.size[1] // 2)
         else:
             pos = (img.size[0] - logo.size[0] - 10, img.size[1] - logo.size[1] - 10)
         
@@ -155,7 +157,7 @@ def get_cv_context(lang='fr', theme='light', request=None):
         linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
         github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
         
-        page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
+        page_qr = generate_qr_code(request.build_absolute_uri() if request else "", scale=2)
         linkedin_qr = generate_qr_code(personal_info.get('linkedin_url'), linkedin_logo_path) if personal_info and 'linkedin_url' in personal_info else None
         github_qr = generate_qr_code(personal_info.get('github_url'), github_logo_path) if personal_info and 'github_url' in personal_info else None
         
@@ -164,7 +166,7 @@ def get_cv_context(lang='fr', theme='light', request=None):
         work_experience = [doc.to_dict() for doc in db.collection('work_experience').where('language', '==', lang).get()]
         skills = [doc.to_dict() for doc in db.collection('skills').get()]
         projects = [doc.to_dict() for doc in db.collection('project').where('language', '==', lang).get()]
-        languages = [doc.to_dict() for doc in db.collection('language').where('language', '==', lang).get()]
+        languages = [doc.to_dict() for doc in db.collection('language').get()]  # Sans filtre de langue
         hobbies = [doc.to_dict() for doc in db.collection('hobby').where('language', '==', lang).get()]
         certifications = [doc.to_dict() for doc in db.collection('certification').where('language', '==', lang).get()]
         
@@ -181,10 +183,11 @@ def get_cv_context(lang='fr', theme='light', request=None):
             logging.error(f"No personal info found for language: {lang}")
             return None
 
+        portfolio_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'portfolio-logo.png')
         linkedin_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'linkedin-logo.png')
         github_logo_path = os.path.join(settings.STATIC_ROOT, 'images', 'github-logo.png')
         
-        page_qr = generate_qr_code(request.build_absolute_uri() if request else "")
+        page_qr = generate_qr_code(request.build_absolute_uri() if request else "", portfolio_logo_path)
         linkedin_qr = generate_qr_code(personal_info.linkedin_url, linkedin_logo_path) if personal_info and personal_info.linkedin_url else None
         github_qr = generate_qr_code(personal_info.github_url, github_logo_path) if personal_info and personal_info.github_url else None
         
@@ -192,7 +195,7 @@ def get_cv_context(lang='fr', theme='light', request=None):
         work_experience = WorkExperience.objects.filter(language=lang)
         skills = Skill.objects.all()
         projects = Project.objects.filter(language=lang)
-        languages = Language.objects.all()
+        languages = Language.objects.all()  # Sans filtre de langue
         hobbies = Hobby.objects.filter(language=lang)
         certifications = Certification.objects.filter(language=lang)
         
@@ -384,6 +387,7 @@ def initialize_mistral(request):
             "status": "error",
             "message": str(e)
         }, status=500)
+
 
 
 

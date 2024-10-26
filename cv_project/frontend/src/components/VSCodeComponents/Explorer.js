@@ -68,10 +68,7 @@ const Explorer = ({ addActiveFile, language }) => {
         const projectsData = projects.data.map(proj => {
           let content = `# ${proj.title || 'Untitled Project'}
 
-## ${t('ShortDescription')}
-${proj.short_description || 'No short description available'}
-
-`;
+${proj.short_description ? `## ${t('ShortDescription')}\n${proj.short_description}\n\n` : ''}`;
 
           if (proj.github_url || proj.live_url) {
             content += `## ${t('Links')}\n`;
@@ -80,89 +77,92 @@ ${proj.short_description || 'No short description available'}
             content += "\n";
           }
 
-          content += `## ${t('LongDescription')}
-${proj.long_description || 'No long description available'}
+          content += proj.long_description ? `## ${t('LongDescription')}\n${proj.long_description}\n\n` : '';
+          
+          if (proj.technologies?.length) {
+            content += `## ${t('Technologies')}\n${proj.technologies.map(tech => tech.name).join(', ')}\n\n`;
+          }
 
-## ${t('Technologies')}
-${proj.technologies ? proj.technologies.map(tech => tech.name).join(', ') : 'Not specified'}
-`;
+          if (proj.key_learning?.length) {
+            content += `## ${t('KeySkillsAcquired')}\n${proj.key_learning.join(', ')}`;
+          }
 
           return {
             name: `${proj.title || 'Untitled Project'}.md`,
-            content: content
+            content: content.trim()
           };
         });
 
-        const workExperienceData = workExperience.data.map(exp => ({
-          name: `${exp.position || 'Untitled Position'} - ${exp.company || 'Unnamed Company'}.md`,
-          content: `# ${exp.position || 'Untitled Position'} at ${exp.company || 'Unnamed Company'}
+        const workExperienceData = workExperience.data.map(exp => {
+          let content = `# ${exp.position || 'Untitled Position'} at ${exp.company || 'Unnamed Company'}
 
-## ${t('Period')}
-${exp.start_date || 'Not specified'} - ${exp.end_date || 'Present'}
+${exp.start_date || exp.end_date ? `## ${t('Period')}\n${exp.start_date || 'Not specified'} - ${exp.end_date || 'Present'}\n\n` : ''}`;
 
-## ${t('ShortDescription')}
-${exp.short_description || 'No short description available'}
+          if (exp.short_description) {
+            content += `## ${t('ShortDescription')}\n${exp.short_description}\n\n`;
+          }
 
-## ${t('LongDescription')}
-${exp.long_description || 'No long description available'}
+          if (exp.long_description) {
+            content += `## ${t('LongDescription')}\n${exp.long_description}\n\n`;
+          }
 
-## ${t('ObjectivePurpose')}
-${exp.objectif_but || 'Not specified'}
+          if (exp.objectif_but) {
+            content += `## ${t('ObjectivePurpose')}\n${exp.objectif_but}\n\n`;
+          }
 
-## ${t('Location')}
-${exp.location || 'Not specified'}
+          if (exp.location) {
+            content += `## ${t('Location')}\n${exp.location}\n\n`;
+          }
 
-## ${t('KeySkillsAcquired')}
-${exp.key_learning ? exp.key_learning.map(skill => skill.name).join(', ') : 'Not specified'}
-`
-        }));
+          if (exp.key_learning?.length) {
+            content += `## ${t('KeySkillsAcquired')}\n${exp.key_learning.join(', ')}`;
+          }
 
-        const skillsData = {
-          "Programming Languages": skills.data.filter(skill => skill.type === 'programming_languages').map(skill => skill.name),
-          "Hard Skills": skills.data.filter(skill => skill.type === 'hard_skills').map(skill => skill.name),
-          "Soft Skills": skills.data.filter(skill => skill.type === 'soft_skills').map(skill => skill.name)
-        };
+          return {
+            name: `${exp.position || 'Untitled Position'} - ${exp.company || 'Unnamed Company'}.md`,
+            content: content.trim()
+          };
+        });
+
+        const educationData = education.data.map(edu => {
+          let content = `# ${edu.institution || 'Unnamed Institution'}
+
+${edu.degree ? `## ${t('Degree')}\n${edu.degree}\n\n` : ''}`;
+
+          if (edu.field_of_study) {
+            content += `## ${t('FieldOfStudy')}\n${edu.field_of_study}\n\n`;
+          }
+
+          if (edu.description) {
+            content += `## ${t('ShortDescription')}\n${edu.description}\n\n`;
+          }
+
+          if (edu.start_date || edu.end_date) {
+            content += `## ${t('Period')}\n${edu.start_date || 'Not specified'} - ${edu.end_date || 'Present'}\n\n`;
+          }
+
+          if (edu.location) {
+            content += `## ${t('Location')}\n${edu.location}\n\n`;
+          }
+
+          if (edu.key_learning?.length) {
+            content += `## ${t('KeySkillsAcquired')}\n${edu.key_learning.join(', ')}`;
+          }
+
+          return {
+            name: `${edu.institution || 'Unnamed Institution'}.md`,
+            content: content.trim()
+          };
+        });
 
         const hobbiesData = hobbies.data.map(hobby => ({
           name: `${hobby.title || 'Unnamed Hobby'}.md`,
           content: `# ${hobby.title || 'Unnamed Hobby'}
 
-## ${t('ShortDescription')}
-${hobby.short_description || 'No short description available'}
-
-## ${t('LongDescription')}
-${hobby.long_description || 'No long description available'}
-`
+${hobby.short_description ? `## ${t('ShortDescription')}\n${hobby.short_description}\n\n` : ''}${hobby.long_description ? `## ${t('LongDescription')}\n${hobby.long_description}` : ''}`.trim()
         }));
-
-        // Ajoutez ceci pour vérifier le contenu de hobbiesData
-        console.log('Hobbies data processed:', hobbiesData);
 
         const personalInfoData = personalInfo.data[0] || {};
-
-        const educationData = education.data.map(edu => ({
-          name: `${edu.institution || 'Unnamed Institution'}.md`,
-          content: `# ${edu.institution || 'Unnamed Institution'}
-
-## ${t('Degree')}
-${edu.degree || 'Not specified'}
-
-## ${t('FieldOfStudy')}
-${edu.field_of_study || 'Not specified'}
-
-## ${t('ShortDescription')}
-${edu.description || 'No description available'}
-
-## ${t('Period')}
-${edu.start_date || 'Not specified'} - ${edu.end_date || 'Present'}
-
-## ${t('Location')}
-${edu.location || 'Not specified'}
-
-## ${t('KeySkillsAcquired')}
-${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not specified'}
-`
-        }));
 
         const newCvStructure = {
           [t('Projects')]: projectsData,
@@ -170,13 +170,24 @@ ${edu.key_learning ? edu.key_learning.map(skill => skill.name).join(', ') : 'Not
           [t('Education')]: educationData,
           [t('Personal')]: {
             [t('Hobbies')]: hobbiesData,
-            [`${t('Skills')}.json`]: { 
-              name: `${t('Skills')}.json`, 
-              content: JSON.stringify(skillsData, null, 2) 
+            'skills.json': {
+              name: 'All_Skills.json',
+              content: JSON.stringify(
+                Object.fromEntries(
+                  Object.entries({
+                    "Programming Languages": skills.data.filter(skill => skill.type === 'programming_languages').map(skill => skill.name),
+                    "Hard Skills": skills.data.filter(skill => skill.type === 'hard_skills').map(skill => skill.name),
+                    "Soft Skills": skills.data.filter(skill => skill.type === 'soft_skills').map(skill => skill.name),
+                    "Work Skills": skills.data.filter(skill => skill.type === 'work').map(skill => skill.name),
+                    "Education Skills": skills.data.filter(skill => skill.type === 'education').map(skill => skill.name),
+                    "Project Technologies": projects.data.flatMap(proj => proj.technologies || [])
+                      .filter((value, index, self) => self.indexOf(value) === index)
+                  }).filter(([_, values]) => values.length > 0)
+                ), null, 2)
             },
             'personalInfo.json': {
               name: 'personalInfo.json',
-              content: JSON.stringify(personalInfoData, null, 2)
+              content: JSON.stringify(personalInfo.data[0] || {}, null, 2)
             }
           }
         };

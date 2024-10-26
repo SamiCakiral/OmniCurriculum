@@ -5,7 +5,6 @@ const SideBar = ({ setShowExplorer, setShowConsole, openSettings, openCVPanel })
   const icons = [
     { Icon: DocumentDuplicateIcon, action: () => setShowExplorer(prev => !prev), label: 'Toggle Explorer' },
     { Icon: TerminalIcon, action: () => setShowConsole(prev => !prev), label: 'Toggle Console' },
-    { Icon: PrinterIcon, action: () => window.print(), label: 'Print CV' },
     { Icon: DocumentDownloadIcon, action: openCVPanel, label: 'View and Download CV' },
     { Icon: CogIcon, action: openSettings, label: 'Paramètres' }
   ];

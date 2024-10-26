@@ -437,7 +437,8 @@ class AIAssistant:
                 model=self.mistral.model,
                 messages=messages,
                 tools=self.get_tools(),
-                tool_choice="any"  # Force l'utilisation des tools
+                tool_choice="any",  # Force l'utilisation des tools
+                temperature=0
             )
 
             # 2. Si des tools sont appelés
