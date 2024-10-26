@@ -27,7 +27,16 @@
 .vscode-window-control.close { background-color: #ff5f56; }
 .vscode-window-control.minimize { background-color: #ffbd2e; }
 .vscode-window-control.maximize { background-color: #27c93f; }
+:root {
+  --vscode-notifications-background: #252526;
+  --vscode-notifications-foreground: #cccccc;
+}
 
+/* Pour le thème clair si nécessaire */
+.light {
+  --vscode-notifications-background: #f3f3f3;
+  --vscode-notifications-foreground: #333333;
+}
 .vscode-title {
   flex-grow: 1;
   text-align: center;

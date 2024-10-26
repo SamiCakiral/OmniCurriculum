@@ -8,6 +8,7 @@ import Chronologie from './VSCodeComponents/Chronologie';
 import Settings from './VSCodeComponents/Settings';
 import CVPanel from './CVPanel';
 import './vscode-custom-layout.css';
+import Notifications from './VSCodeComponents/Notifications';
 
 const VSCodeTheme = ({ language, setLanguage }) => {
   const [activeFiles, setActiveFiles] = useState([]);
@@ -109,6 +110,39 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     addActiveFile({ section: 'Paramètres', name: 'settings.json' });
   }, []);
 
+  const [notifications, setNotifications] = useState([]);
+
+  const addNotification = (message, type = 'info') => {
+    const newNotification = {
+      id: Date.now(),
+      message,
+      type,
+    };
+    setNotifications(prev => [...prev, newNotification]);
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  useEffect(() => {
+    // Première notification après 1 seconde
+    setTimeout(() => {
+      addNotification(
+        "Vous pouvez discutez avec une version de moi dans la console qui va vous résumer tout mon parcours !",
+        "info"
+      );
+    }, 1000);
+
+    // Deuxième notification après 7 secondes
+    setTimeout(() => {
+      addNotification(
+        "Vous pouvez telecharger mon CV en cliquant a gauche ! hésitez pas a me contacter !",
+        "info"
+      );
+    }, 7000);
+  }, []); // Le tableau vide signifie que cet effet ne s'exécute qu'une fois au montage
+
   return (
     <div className={`vscode-layout ${theme}`}>
       <div className="vscode-topbar">
@@ -204,6 +238,10 @@ const VSCodeTheme = ({ language, setLanguage }) => {
       </div>
       <StatusBar />
       <CVPanel isOpen={showCVPanel} onClose={() => setShowCVPanel(false)} language={language} />
+      <Notifications 
+        notifications={notifications} 
+        removeNotification={removeNotification}
+      />
     </div>
   );
 };

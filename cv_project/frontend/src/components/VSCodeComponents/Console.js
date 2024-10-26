@@ -13,7 +13,11 @@ const Console = ({ language, cvStructure }) => {
   const [isMistralRunning, setIsMistralRunning] = useState(false);
   const messagesEndRef = useRef(null);
   const consoleRef = useRef(null);
-  const [commandHistory, setCommandHistory] = useState([]);
+  const [commandHistory, setCommandHistory] = useState([
+    'python talkWithMistral.py',
+    'cat personalInfo.json',
+    `ssh ${personalInfo?.name.toLowerCase().replace(' ', '')}@cv-server`
+  ]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isMistralInitialized, setIsMistralInitialized] = useState(false);
@@ -174,7 +178,14 @@ const Console = ({ language, cvStructure }) => {
       case 'Enter':
         if (inputMessage.trim() === '') return;
 
-        setCommandHistory(prev => [inputMessage, ...prev]);
+        // Modifions cette partie pour éviter les doublons dans l'historique
+        setCommandHistory(prev => {
+          // Vérifie si la commande existe déjà dans l'historique
+          if (!prev.includes(inputMessage)) {
+            return [inputMessage, ...prev];
+          }
+          return prev;
+        });
         setHistoryIndex(-1);
 
         if (isTalkWithMeRunning) {
