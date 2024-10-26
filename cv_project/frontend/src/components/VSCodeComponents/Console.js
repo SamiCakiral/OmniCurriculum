@@ -14,31 +14,40 @@ const Console = ({ language, cvStructure }) => {
   const messagesEndRef = useRef(null);
   const consoleRef = useRef(null);
   const [commandHistory, setCommandHistory] = useState([
-    'python talkWithMistral.py',
+    'python talkWithMe_stral.py',
     'cat personalInfo.json',
     `ssh ${personalInfo?.name.toLowerCase().replace(' ', '')}@cv-server`
   ]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isMistralInitialized, setIsMistralInitialized] = useState(false);
-
+  const [cursorPosition, setCursorPosition] = useState(0);
   const translations = {
     fr: {
       loading: "Chargement du terminal...",
       connectionError: "Impossible de se connecter au serveur CV.",
       terminal: "Terminal",
-      welcomeMessage: "Bienvenue ! Je suis {name}, enfin une version artificielle de moi-même (propulsé par Mistral AI 7B). Posez moi des questions sur moi je serait ravi de répondre ! (tapez 'exit' pour quitter)",
-      
+      welcomeMessage: "Bienvenue ! Je suis {name}, enfin une version artificielle de moi-même (propulsé par Mixtral 8x22B). Posez moi des questions sur moi je serait ravi de répondre ! (tapez 'exit' pour quitter)",
+      foundSecretFile: "Merci d'avoir trouvé ce fichier j'ai pas codé ça pour rien hahaha",
+      assistantStopped: "Assistant virtuel arrêté.",
+      noProgramToQuit: "Aucun programme à quitter.",
+      unknownCommand: "Commande non reconnue : {command}",
+      cdError: "cd: {dir}: Aucun fichier ou dossier de ce type",
+      emptyDirectory: "Dossier vide"
     },
     en: {
       loading: "Loading terminal...",
       connectionError: "Unable to connect to CV server.",
       terminal: "Terminal",
-      welcomeMessage: "Welcome! I'm {name}, well I am a virtual version of myself (powered by Mistral AI 7B). Ask me questions about me and I'll be happy to answer! (type 'exit' to quit)",
-      
+      welcomeMessage: "Welcome! I'm {name}, well actually I am a virtual version of myself (powered by Mixtral 8x22B). Ask me questions about me and I'll be happy to answer! (type 'exit' to quit)",
+      foundSecretFile: "Thanks for finding this file I didn't code this for nothing hahaha",
+      assistantStopped: "Virtual assistant stopped.",
+      noProgramToQuit: "No program to quit.",
+      unknownCommand: "Unknown command: {command}",
+      cdError: "cd: {dir}: No such file or directory",
+      emptyDirectory: "Directory is empty"
     }
   };
-
   const t = (key, params = {}) => {
     let translation = translations[language][key] || key;
     Object.keys(params).forEach(param => {
@@ -46,6 +55,63 @@ const Console = ({ language, cvStructure }) => {
     });
     return translation;
   };
+  // Initialisons une structure de base pour le système de fichiers
+  const [fileSystem, setFileSystem] = useState({
+    '~': {
+      'projects': {
+        type: 'directory',
+        content: {
+          'project1.txt': {
+            type: 'file',
+            content: 'Description du projet 1'
+          }
+        }
+      },
+      'education': {
+        type: 'directory',
+        content: {
+          'education1.txt': {
+            type: 'file',
+            content: 'Description de l\'éducation 1'
+          }
+        }
+      },
+      'experience': {
+        type: 'directory',
+        content: {
+          'experience1.txt': {
+            type: 'file',
+            content: 'Description de l\'expérience 1'
+          }
+        }
+      },
+      'skills': {
+        type: 'directory',
+        content: {
+          'skills1.txt': {
+            type: 'file',
+            content: 'Description des compétences 1'
+          }
+        }
+      },
+      'personalInfo.json': {
+        type: 'file',
+        content: ''
+      },
+      '.talkWithMe_stral.py': {  // Notez le point au début pour le cacher
+        type: 'file',
+        content: '# Hidden AI Chat Interface'
+      },
+      '.trouve.txt': {  // Ajout du point pour le cacher
+        type: 'file',
+        content: t('foundSecretFile')
+      }
+    }
+  });
+
+  
+
+
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
@@ -62,7 +128,7 @@ const Console = ({ language, cvStructure }) => {
             { type: 'output', content: `Last login: ${new Date().toLocaleString()}` },
             { type: 'command', content: `${reorganizedData.name.toLowerCase().replace(' ', '')}@cv-server ~ % cat personalInfo.json`, status: 'success' },
             { type: 'output', content: JSON.stringify(reorganizedData, null, 2) },
-            { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMistral.py`, status: 'success' },
+            { type: 'command', content: `${response.data[0].name.toLowerCase().replace(' ', '')}@cv-server ~ % python talkWithMe_stral.py`, status: 'success' },
             { type: 'output', content: t('welcomeMessage', { name: response.data[0].name }) }
           ]);
           setIsTalkWithMeRunning(true);
@@ -90,6 +156,9 @@ const Console = ({ language, cvStructure }) => {
     const cmd = parts[0];
     const args = parts.slice(1);
 
+    // Ajout du message de commande
+    addMessage('command', `${personalInfo.name.toLowerCase().replace(' ', '')}@cv-server ${currentDirectory} % ${command}`, 'success');
+
     switch (cmd) {
       case 'cd':
         handleCd(args[0]);
@@ -104,9 +173,9 @@ const Console = ({ language, cvStructure }) => {
         handleCat(args[0]);
         break;
       case 'python':
-        if (args[0] === 'talkWithMe.py') {
+        if (args[0] === 'talkWithMistral.py' || args[0] === '.talkWithMe.py') {
           setIsTalkWithMeRunning(true);
-          addMessage('output', 'Assistant virtuel démarré. Posez vos questions !');
+          addMessage('output', t('welcomeMessage', { name: personalInfo.name }));
         } else {
           addMessage('output', `Fichier Python non trouvé : ${args[0]}`);
         }
@@ -114,35 +183,73 @@ const Console = ({ language, cvStructure }) => {
       case 'exit':
         if (isTalkWithMeRunning) {
           setIsTalkWithMeRunning(false);
-          addMessage('output', 'Assistant virtuel arrêté.');
+          addMessage('output', t('assistantStopped'));
+          // Réinitialiser le répertoire courant à la racine
+          setCurrentDirectory('~');
         } else {
-          addMessage('output', 'Aucun programme à quitter.');
+          addMessage('output', t('noProgramToQuit'));
         }
         break;
       default:
-        addMessage('output', `Commande non implémentée : ${cmd}`);
+        addMessage('output', t('unknownCommand', { command: cmd }));
     }
   };
 
   const handleCd = (dir) => {
+    if (!dir || dir === '~') {
+      setCurrentDirectory('~');
+      addMessage('output', '');
+      return;
+    }
+
     if (dir === '..') {
       if (currentDirectory !== '~') {
-        setCurrentDirectory(currentDirectory.split('/').slice(0, -1).join('/') || '~');
+        const newPath = currentDirectory.split('/').slice(0, -1).join('/') || '~';
+        setCurrentDirectory(newPath);
+        addMessage('output', '');
       }
-    } else if (dir && cvStructure[currentDirectory] && cvStructure[currentDirectory][dir]) {
-      setCurrentDirectory(`${currentDirectory}/${dir}`);
+      return;
+    }
+
+    let current = fileSystem['~'];
+    if (dir in current && current[dir].type === 'directory') {
+      setCurrentDirectory(currentDirectory === '~' ? `~/${dir}` : `${currentDirectory}/${dir}`);
+      addMessage('output', '');
     } else {
-      addMessage('output', `cd: ${dir}: Aucun fichier ou dossier de ce type`);
+      addMessage('output', t('cdError', { dir: dir }));
     }
   };
 
-  const handleLs = (showHidden) => {
-    const currentDirContent = cvStructure[currentDirectory] || {};
-    let output = Object.keys(currentDirContent).join('  ');
-    if (showHidden && currentDirectory === '~') {
-      output += '  .talkWithMe.py';
+  const handleLs = (showHidden = false) => {
+    let current = fileSystem['~'];
+    
+    // Navigation vers le bon répertoire
+    if (currentDirectory !== '~') {
+      const pathParts = currentDirectory.split('/').filter(part => part !== '~');
+      for (const part of pathParts) {
+        if (current[part] && current[part].type === 'directory') {
+          current = current[part].content;
+        }
+      }
     }
-    addMessage('output', output || 'Dossier vide');
+
+    // Filtrer et formater les éléments
+    const items = Object.entries(current)
+      .filter(([name]) => showHidden || !name.startsWith('.'))
+      .map(([name, item]) => {
+        if (item.type === 'directory') {
+          return name + '/';  // Ajouter un slash pour les dossiers
+        }
+        return name;
+      });
+
+    if (items.length === 0) {
+      addMessage('output', t('emptyDirectory'));
+    } else {
+      // Créer une chaîne simple avec les éléments
+      const output = items.join('  ');
+      addMessage('output', output);
+    }
   };
 
   const handleEcho = (text) => {
@@ -150,11 +257,27 @@ const Console = ({ language, cvStructure }) => {
   };
 
   const handleCat = (file) => {
-    const currentDirContent = cvStructure[currentDirectory] || {};
-    if (currentDirContent[file]) {
-      addMessage('output', currentDirContent[file].content);
+    let current = fileSystem['~'];
+    
+    // Si nous ne sommes pas à la racine, naviguer jusqu'au bon répertoire
+    if (currentDirectory !== '~') {
+      const pathParts = currentDirectory.split('/').filter(part => part !== '~');
+      for (const part of pathParts) {
+        if (current[part] && current[part].type === 'directory') {
+          current = current[part].content;
+        }
+      }
+    }
+
+    if (current[file] && current[file].type === 'file') {
+      if (file === 'personalInfo.json' && personalInfo) {
+        const formattedInfo = reorganizePersonalInfo(personalInfo);
+        addMessage('output', JSON.stringify(formattedInfo, null, 2));
+      } else {
+        addMessage('output', current[file].content);
+      }
     } else {
-      addMessage('output', `cat: ${file}: Aucun fichier ou dossier de ce type`);
+      addMessage('output', t('catError', { file: file }));
     }
   };
 
@@ -192,7 +315,7 @@ const Console = ({ language, cvStructure }) => {
           if (inputMessage.toLowerCase() === 'exit') {
             setIsTalkWithMeRunning(false);
             addMessage('command', '> exit');
-            addMessage('output', 'Assistant virtuel arrêté.');
+            addMessage('output', t('assistantStopped'));
           } else {
             handleMistralInteraction(inputMessage);
           }
@@ -202,18 +325,24 @@ const Console = ({ language, cvStructure }) => {
         }
 
         setInputMessage('');
+        setCursorPosition(0); // Réinitialiser la position du curseur après Enter
         break;
 
       case 'Backspace':
-        setInputMessage(prev => prev.slice(0, -1));
+        if (cursorPosition > 0) {
+          setInputMessage(prev => 
+            prev.slice(0, cursorPosition - 1) + prev.slice(cursorPosition)
+          );
+          setCursorPosition(prev => Math.max(0, prev - 1));
+        }
         break;
 
       case 'ArrowLeft':
-        // Déplacer le curseur vers la gauche (non implémenté ici)
+        setCursorPosition(prev => Math.max(0, prev - 1));
         break;
 
       case 'ArrowRight':
-        // Déplacer le curseur vers la droite (non implémenté ici)
+        setCursorPosition(prev => Math.min(inputMessage.length, prev + 1));
         break;
 
       case 'ArrowUp':
@@ -222,6 +351,9 @@ const Console = ({ language, cvStructure }) => {
           setInputMessage(commandHistory[newIndex] || '');
           return newIndex;
         });
+        if (commandHistory[historyIndex + 1]) {
+          setCursorPosition(commandHistory[historyIndex + 1].length);
+        }
         break;
 
       case 'ArrowDown':
@@ -230,11 +362,19 @@ const Console = ({ language, cvStructure }) => {
           setInputMessage(newIndex === -1 ? '' : commandHistory[newIndex]);
           return newIndex;
         });
+        if (historyIndex === -1) {
+          setCursorPosition(0);
+        } else if (commandHistory[historyIndex - 1]) {
+          setCursorPosition(commandHistory[historyIndex - 1].length);
+        }
         break;
 
       default:
-        if (e.key.length === 1) { // Vérifie si c'est un caractère imprimable
-          setInputMessage(prev => prev + e.key);
+        if (e.key.length === 1) { // Caractère imprimable
+          setInputMessage(prev => 
+            prev.slice(0, cursorPosition) + e.key + prev.slice(cursorPosition)
+          );
+          setCursorPosition(prev => prev + 1);
         }
         break;
     }
@@ -329,6 +469,30 @@ const Console = ({ language, cvStructure }) => {
     }
   }, []);
 
+  // Ajout d'un useEffect pour initialiser le système de fichiers avec les données personnelles
+  useEffect(() => {
+    if (personalInfo) {
+      setFileSystem(prev => ({
+        ...prev,
+        '~': {
+          ...prev['~'],
+          'personalInfo.json': {
+            type: 'file',
+            content: JSON.stringify(reorganizePersonalInfo(personalInfo), null, 2)
+          },
+          '.talkWithMe_stral.py': {  // Correction du nom du fichier
+            type: 'file',
+            content: '# Hidden AI Chat Interface'
+          },
+          '.trouve.txt': {  // Fichier caché
+            type: 'file',
+            content: t('foundSecretFile')
+          }
+        }
+      }));
+    }
+  }, [personalInfo, language]);
+
   if (isLoading) return <div className="h-full bg-[var(--bg-primary)] text-[var(--accent-color)] p-4">{t('loading')}</div>;
   if (error) return <div className="h-full bg-[var(--bg-primary)] text-red-500 p-4">{error}</div>;
   if (!personalInfo) return <div className="h-full bg-[var(--bg-primary)] text-yellow-500 p-4">{t('connectionError')}</div>;
@@ -350,13 +514,24 @@ const Console = ({ language, cvStructure }) => {
             {message.type === 'command' && (
               <span className={`w-2 h-2 rounded-full mr-2 ${message.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`}></span>
             )}
-            <span>{message.content}</span>
+            <span>
+              {message.content.split('  ').map((item, i) => (
+                <span
+                  key={i}
+                  className={`${item.endsWith('/') ? 'text-blue-500' : ''}`}
+                  style={{ marginRight: i < message.content.split('  ').length - 1 ? '1rem' : 0 }}
+                >
+                  {item}
+                </span>
+              ))}
+            </span>
           </div>
         ))}
         <div className="text-xs font-mono">
           {isTalkWithMeRunning ? '> ' : `${personalInfo.name.toLowerCase().replace(' ', '')}@cv-server ${currentDirectory} % `}
-          {inputMessage}
+          <span>{inputMessage.slice(0, cursorPosition)}</span>
           <span className="animate-blink">|</span>
+          <span>{inputMessage.slice(cursorPosition)}</span>
         </div>
         <div ref={messagesEndRef} />
       </div>

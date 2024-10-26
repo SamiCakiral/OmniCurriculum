@@ -41,6 +41,24 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     });
   };
 
+  const translations = {
+    fr: {
+      notification1: "Vous pouvez discutez avec une version de moi dans la console qui va vous résumer tout mon parcours !",
+      notification2: "Vous pouvez telecharger mon CV en cliquant a gauche ! N'hésitez pas a me contacter !"
+    },
+    en: {
+      notification1: "You can chat with a version of me in the console that will summarize my entire career for you!",
+      notification2: "You can download my CV by clicking on the left! Feel free to contact me!"
+    }
+  }
+  const t = (key, params = {}) => {
+    let translation = translations[language][key] || key;
+    Object.keys(params).forEach(param => {
+      translation = translation.replace(`{${param}}`, params[param]);
+    });
+    return translation;
+  };
+
   useEffect(() => {
     console.log("Active files changed:");
     activeFiles.forEach(file => {
@@ -129,7 +147,7 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     // Première notification après 1 seconde
     setTimeout(() => {
       addNotification(
-        "Vous pouvez discutez avec une version de moi dans la console qui va vous résumer tout mon parcours !",
+        t('notification1'),
         "info"
       );
     }, 1000);
@@ -137,7 +155,7 @@ const VSCodeTheme = ({ language, setLanguage }) => {
     // Deuxième notification après 7 secondes
     setTimeout(() => {
       addNotification(
-        "Vous pouvez telecharger mon CV en cliquant a gauche ! hésitez pas a me contacter !",
+        t('notification2'),
         "info"
       );
     }, 7000);

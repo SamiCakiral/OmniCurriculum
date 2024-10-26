@@ -75,8 +75,8 @@ ${proj.short_description || 'No short description available'}
 
           if (proj.github_url || proj.live_url) {
             content += `## ${t('Links')}\n`;
-            if (proj.github_url) content += `GitHub: ${proj.github_url}\n`;
-            if (proj.live_url) content += `Live: ${proj.live_url}\n`;
+            if (proj.github_url) content += `GitHub: [${proj.github_url}](${proj.github_url})\n`;
+            if (proj.live_url) content += `Live: [${proj.live_url}](${proj.live_url})\n`;
             content += "\n";
           }
 
