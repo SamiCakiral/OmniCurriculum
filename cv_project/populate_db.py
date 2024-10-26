@@ -5,6 +5,10 @@ import json
 from django.core.management import execute_from_command_line
 from django.utils import timezone
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cv_project.settings')
 django.setup()
 
@@ -41,7 +45,7 @@ if USE_FIRESTORE:
         firebase_admin.initialize_app(cred, options=options)
         db = firestore_client.Client(project=os.getenv('PROJECT_ID'), database=os.getenv('DATABASE_ID'))
         clear_firestore()
-        
+
 def check_database_connection():
     db_conn = connections['default']
     try:

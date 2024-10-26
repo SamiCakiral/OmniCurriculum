@@ -69,24 +69,54 @@ class AIAssistant:
         }
         self.conversation_history = []
         self.mistral = MistralClient()  # Utilise le singleton
-        self.initialize_context()
         self.use_firestore = os.getenv('USE_FIRESTORE', 'False').lower() == 'true'
-        if self.use_firestore:
-            self.db = firestore.client()
         
+        if self.use_firestore:
+            import firebase_admin
+            from firebase_admin import credentials
+            from google.cloud import firestore as firestore_client
+            
+            if not firebase_admin._apps:
+                cred = credentials.Certificate(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
+                options = {
+                    "projectId": os.getenv('PROJECT_ID'),
+                    'databaseURL': os.getenv('DATABASE_URL')
+                }
+                firebase_admin.initialize_app(cred, options=options)
+            
+            self.db = firestore_client.Client(
+                project=os.getenv('PROJECT_ID'),
+                database=os.getenv('DATABASE_ID')
+            )
+        
+        self.initialize_context()
+
     def initialize_context(self):
         """Charge uniquement les informations de base."""
         try:
-            # Charger uniquement les infos personnelles essentielles
-            personal_info = PersonalInfo.objects.filter(language=self.language).first()
-            if personal_info:
-                self.memory['personal_info'] = {
-                    'name': personal_info.name,
-                    'title': personal_info.title,
-                    'wanted_position': personal_info.wanted_position,
-                    'email': personal_info.email,
-                    'phone': personal_info.phone,
-                }
+            if self.use_firestore:
+                # Récupération via Firestore
+                docs = self.db.collection('personal_info').where('language', '==', self.language).get()
+                if docs:
+                    info = docs[0].to_dict()
+                    self.memory['personal_info'] = {
+                        'name': info['name'],
+                        'title': info['title'],
+                        'wanted_position': info['wanted_position'],
+                        'email': info['email'],
+                        'phone': info['phone'],
+                    }
+            else:
+                # Récupération via Django ORM
+                personal_info = PersonalInfo.objects.filter(language=self.language).first()
+                if personal_info:
+                    self.memory['personal_info'] = {
+                        'name': personal_info.name,
+                        'title': personal_info.title,
+                        'wanted_position': personal_info.wanted_position,
+                        'email': personal_info.email,
+                        'phone': personal_info.phone,
+                    }
             
             # Initialiser les conteneurs vides pour les autres informations
             self.memory['discovered_projects'] = []
@@ -96,6 +126,14 @@ class AIAssistant:
 
         except Exception as e:
             logger.error(f"Erreur lors de l'initialisation du contexte: {e}")
+            # Initialiser avec des valeurs par défaut en cas d'erreur
+            self.memory['personal_info'] = {
+                'name': 'Non disponible',
+                'title': 'Non disponible',
+                'wanted_position': 'Non disponible',
+                'email': 'Non disponible',
+                'phone': 'Non disponible',
+            }
 
     def append_to_history(self, message) -> None:
         """Ajoute un message à l'historique avec gestion du contexte."""
@@ -673,6 +711,8 @@ class AIAssistant:
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des hobbies: {e}")
             return "Erreur lors de la récupération des hobbies."
+
+
 
 
 
